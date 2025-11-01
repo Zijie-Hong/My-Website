@@ -899,9 +899,9 @@
                 <div id="editProcessModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editProcessModalLabel" aria-hidden="true" style="display: none; position: fixed; top: 0; left: 0; z-index: 1050; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto;">
                     <div class="modal-dialog" role="document" style="max-width: 80%; width: 80%; margin: 1.75rem auto; max-height: 90vh; position: relative; z-index: 1060;">
                         <div class="modal-content" style="border-radius: var(--border-radius); box-shadow: var(--shadow-lg); border: none; overflow: hidden; background-color: var(--white);">
-                            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-blue) 100%); padding: 1.5rem 2rem; color: var(--white);">
+                            <div class="modal-header" style="padding: 1.5rem 2rem;">
                                 <h5 class="modal-title" id="editProcessModalLabel" style="font-weight: 700; font-size: 1.35rem; margin: 0;">编辑实现过程</h5>
-                                <button type="button" class="close" onclick="closeEditProcessModal()" aria-label="Close" style="color: var(--white); opacity: 1; transition: opacity 0.2s; background: rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: -5px; margin-right: -5px;">
+                                <button type="button" class="close" onclick="closeEditProcessModal()" aria-label="Close" style="color: var(--dark-blue); opacity: 1; transition: opacity 0.2s; background: rgba(0,0,0,0.05); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: -5px; margin-right: -5px;">
                                     <span aria-hidden="true" style="font-size: 1rem;">&times;</span>
                                 </button>
                             </div>
@@ -1390,6 +1390,7 @@
             
             // 初始化步骤选择下拉框
             function populateStepSelect() {
+                
                 const stepSelect = document.getElementById('step-select');
                 const processText = processContent.value.trim();
                 const processLines = processText.split('\n').filter(line => line.trim());
@@ -1397,12 +1398,13 @@
                 // 清空现有选项
                 stepSelect.innerHTML = '';
                 
-                // 添加步骤选项
+                // 添加步骤选项 - 严格控制格式
                 processLines.forEach((line, index) => {
                     const stepNumber = index + 1;
                     const option = document.createElement('option');
                     option.value = stepNumber;
-                    option.textContent = `步骤 ${stepNumber}`;
+                    // 强制设置为"步骤 X"格式，不包含任何其他信息
+                    option.textContent = '步骤 ' + stepNumber;
                     stepSelect.appendChild(option);
                 });
                 
@@ -1533,7 +1535,7 @@
                         
                         filteredImages.forEach(imageData => {
                             const imageContainer = document.createElement('div');
-                            imageContainer.className = 'col-4 col-sm-4 col-md-3 col-lg-4';
+                            imageContainer.className = 'col-6 col-sm-4 col-md-3'; // 调整网格类以确保卡片并排显示
                             
                             // 从URL中提取文件名
                             let imageUrl = imageData.url || '';
@@ -1683,7 +1685,7 @@
                         
                         // 创建图片预览，这里改缩略图？
                         const imageContainer = document.createElement('div');
-                        imageContainer.className = 'col-4 col-sm-4 col-md-3 col-lg-4';
+                        imageContainer.className = 'col-6 col-sm-4 col-md-3';
                         
                         // 首先创建一个加载中的占位符
                         imageContainer.innerHTML = `
@@ -2330,6 +2332,12 @@
                     // 创建新的简化模态框
                     const modal = createSimpleModal();
                     let currentStep = 0;
+                    let currentImageIndex = 0; // 跟踪当前步骤中的图片索引
+                    
+                    // 初始化：如果第一个步骤没有图片，自动跳转到有图片的步骤
+                    while (currentStep < steps.length && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
+                        currentStep++;
+                    }
                     
                     // 更新步骤显示
                     updateStepDisplay(currentStep);
@@ -2342,19 +2350,45 @@
                     }
                     
                     function goToPrevStep() {
-                        if (currentStep > 0) {
+                        const currentStepData = steps[currentStep];
+                        
+                        // 如果当前步骤有多个图片且不是第一张图片，则切换到上一张图片
+                        if (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex > 0) {
+                            currentImageIndex--;
+                        } else if (currentStep > 0) {
+                            // 否则，回到上一个步骤
                             currentStep--;
-                            updateStepDisplay(currentStep);
-                            updateButtonStates();
+                            // 重置图片索引
+                            currentImageIndex = 0;
+                            // 如果上一个步骤没有图片，继续向前找
+                            while (currentStep > 0 && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
+                                currentStep--;
+                            }
                         }
+                        
+                        updateStepDisplay(currentStep);
+                        updateButtonStates();
                     }
                     
                     function goToNextStep() {
-                        if (currentStep < steps.length - 1) {
+                        const currentStepData = steps[currentStep];
+                        
+                        // 如果当前步骤有多个图片且不是最后一张图片，则切换到下一张图片
+                        if (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex < currentStepData.imageUrls.length - 1) {
+                            currentImageIndex++;
+                        } else if (currentStep < steps.length - 1) {
+                            // 否则，前进到下一个步骤
                             currentStep++;
-                            updateStepDisplay(currentStep);
-                            updateButtonStates();
+                            // 重置图片索引
+                            currentImageIndex = 0;
+                            // 如果下一个步骤没有图片，继续向后找
+                            while (currentStep < steps.length - 1 && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
+                                currentStep++;
+                            }
                         }
+                        
+                        updateStepDisplay(currentStep);
+                        updateButtonStates();
                     }
                     
                     function updateStepDisplay(index) {
@@ -2362,7 +2396,16 @@
                         const container = modal.querySelector('#browse-content');
                         const indicator = modal.querySelector('#step-indicator');
                         
-                        indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                        // 重置当前步骤的图片索引
+                        const hasImages = step.imageUrls && step.imageUrls.length > 0;
+                        if (hasImages) {
+                            // 确保图片索引有效
+                            currentImageIndex = Math.min(currentImageIndex, step.imageUrls.length - 1);
+                            // 更新指示器
+                            indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                        } else {
+                            indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                        }
                         
                         // 清空并创建内容
                         container.innerHTML = '';
@@ -2370,6 +2413,8 @@
                         const content = document.createElement('div');
                         content.style.textAlign = 'center';
                         content.style.color = 'white';
+                        content.style.maxWidth = '1000px';
+                        content.style.margin = '0 auto';
                         
                         // 步骤标题
                         const title = document.createElement('h2');
@@ -2389,15 +2434,35 @@
                         text.textContent = step.text;
                         content.appendChild(text);
                         
-                        // 步骤图片
-                        if (step.imageUrl) {
+                        // 步骤图片 - 单张显示，支持图片切换
+                        if (step.imageUrls && step.imageUrls.length > 0) {
+                            // 创建图片容器
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.textAlign = 'center';
+                            imgContainer.style.marginTop = '20px';
+                            
+                            // 显示当前图片
                             const img = document.createElement('img');
-                            img.src = step.imageUrl;
-                            img.alt = `步骤 ${step.number}`;
+                            img.src = step.imageUrls[currentImageIndex];
+                            img.alt = `步骤 ${step.number} 图片`;
                             img.style.maxWidth = '100%';
-                            img.style.maxHeight = '400px';
-                            img.style.marginBottom = '10px';
-                            content.appendChild(img);
+                            img.style.maxHeight = '500px';
+                            img.style.borderRadius = '8px';
+                            img.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                            imgContainer.appendChild(img);
+                            
+                            // 如果有多个图片，显示图片导航信息
+                            if (step.imageUrls.length > 1) {
+                                const imgNavInfo = document.createElement('div');
+                                imgNavInfo.style.color = 'white';
+                                imgNavInfo.style.marginTop = '10px';
+                                imgNavInfo.style.fontSize = '0.9rem';
+                                imgNavInfo.style.opacity = '0.8';
+                                imgNavInfo.textContent = `图片 ${currentImageIndex + 1} / ${step.imageUrls.length}`;
+                                imgContainer.appendChild(imgNavInfo);
+                            }
+                            
+                            content.appendChild(imgContainer);
                         }
                         
                         container.appendChild(content);
@@ -2406,12 +2471,15 @@
                     function updateButtonStates() {
                         const prevBtn = modal.querySelector('#prev-step');
                         const nextBtn = modal.querySelector('#next-step');
+                        const currentStepData = steps[currentStep];
+                        const hasPrev = currentStep > 0 || (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex > 0);
+                        const hasNext = currentStep < steps.length - 1 || (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex < currentStepData.imageUrls.length - 1);
                         
-                        prevBtn.disabled = currentStep === 0;
-                        nextBtn.disabled = currentStep === steps.length - 1;
+                        prevBtn.disabled = !hasPrev;
+                        nextBtn.disabled = !hasNext;
                         
-                        prevBtn.style.opacity = currentStep === 0 ? '0.5' : '1';
-                        nextBtn.style.opacity = currentStep === steps.length - 1 ? '0.5' : '1';
+                        prevBtn.style.opacity = hasPrev ? '1' : '0.5';
+                        nextBtn.style.opacity = hasNext ? '1' : '0.5';
                     }
                     
                     // 绑定事件监听器
@@ -2548,10 +2616,15 @@
                     const processElements = document.querySelectorAll('.process-step');
                     
                     processElements.forEach((element, index) => {
+                        // 收集所有图片URL，而不仅仅是第一张
+                        const allImages = element.querySelectorAll('.step-image img, .step-image-thumbnail img');
+                        const imageUrls = Array.from(allImages).map(img => img.src);
+                        
                         const step = {
                             number: index + 1,
                             text: element.querySelector('.step-text')?.innerText || '无描述',
-                            imageUrl: element.querySelector('.step-image img')?.src || null
+                            imageUrl: imageUrls.length > 0 ? imageUrls[0] : null, // 保留第一张图片作为默认
+                            imageUrls: imageUrls // 添加所有图片URL数组
                         };
                         steps.push(step);
                     });

@@ -33,14 +33,13 @@ function setupProcessEditFunctionality() {
             return;
         }
         
-        // 添加步骤选项
+        // 添加步骤选项 - 修复：只显示步骤编号
         processLines.forEach((line, index) => {
             const stepNumber = index + 1;
             const option = document.createElement('option');
             option.value = stepNumber;
-            // 显示步骤编号和简短内容预览
-            const preview = line.trim().substring(0, 30);
-            option.textContent = `步骤 ${stepNumber}: ${preview}${line.length > 30 ? '...' : ''}`;
+            // 只显示步骤编号，不包含内容预览
+            option.textContent = `步骤 ${stepNumber}`;
             stepSelect.appendChild(option);
         });
     }
@@ -429,7 +428,13 @@ function setupProcessEditFunctionality() {
         });
         
         if (!taskId || !projectId) {
-            showMessage('任务信息丢失,请刷新页面重试', 'error');
+            if (!taskId && !projectId) {
+                showMessage('任务和项目信息丢失,请刷新页面重试', 'error');
+            } else if (!taskId) {
+                showMessage('任务信息丢失,请刷新页面重试', 'error');
+            } else {
+                showMessage('项目信息丢失,请刷新页面重试', 'error');
+            }
             return;
         }
         
@@ -471,7 +476,7 @@ function setupProcessEditFunctionality() {
             }
             
             // 发送请求
-            const url = `/portfolio/project/${projectId}/task/${taskId}/update-process/`;
+            const url = `/projects/${projectId}/tasks/${taskId}/update-process/`;
             console.log('发送请求到:', url);
             
             const response = await fetch(url, {
@@ -495,7 +500,7 @@ function setupProcessEditFunctionality() {
                 
                 // 重定向到任务详情页
                 setTimeout(() => {
-                    window.location.href = `/portfolio/project/${projectId}/task/${taskId}/`;
+                    window.location.href = `/projects/${projectId}/tasks/${taskId}/`;
                 }, 1000);
             } else {
                 showMessage(result.message || '保存失败', 'error');
