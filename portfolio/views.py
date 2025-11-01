@@ -695,6 +695,9 @@ def update_task_process(request, project_id, task_id):
                 
                 print(f"用于匹配的文件名集合: {delete_filenames}")
                 
+                # 预先收集需要从数据库中删除的图片ID
+                db_images_to_delete = []
+                
                 for img in task['step_images']:
                     step_num = str(img.get('step', ''))
                     # 同时检查'filename'和'file_name'键
@@ -729,12 +732,27 @@ def update_task_process(request, project_id, task_id):
                                 print(f"✓ 成功删除文件: {file_path}")
                             else:
                                 print(f"⚠ 文件不存在，跳过删除: {file_path}")
+                            
+                            # 记录需要从数据库删除的图片文件名，用于后续批量删除
+                            db_images_to_delete.append(filename)
                         except Exception as e:
                             failed_to_delete += 1
                             print(f"✗ 文件删除失败: {e}")
                             # 即使文件删除失败，仍然从数据中移除该条目
                     else:
+                        # 只有不删除的图片才添加到新列表
                         new_step_images.append(img)
+                
+                # 从数据库中删除对应的图片记录
+                if db_images_to_delete:
+                    try:
+                        # 查找并删除匹配文件名的数据库记录
+                        for filename in db_images_to_delete:
+                            # 使用包含查询，因为数据库中的文件名可能包含路径前缀
+                            TaskImage.objects.filter(image__contains=filename, task_id=task_id).delete()
+                            print(f"✓ 从数据库中删除图片记录: {filename}")
+                    except Exception as e:
+                        print(f"✗ 从数据库删除图片记录时出错: {e}")
                 
                 # 更新图片列表
                 task['step_images'] = new_step_images

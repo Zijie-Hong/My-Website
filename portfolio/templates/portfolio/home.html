@@ -370,9 +370,9 @@
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">任务分类</h2>
             
-            <div class="categories-container">
+            <div class="categories-container" style="display: flex; gap: 2rem; flex-wrap: wrap;">
                 <!-- R&D分类 -->
-                <div class="task-category-section mb-5" style="border-left: 4px solid {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                <div class="task-category-section" style="flex: 1; min-width: 300px; border-left: 4px solid {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
                     <div class="category-header" style="background-color: {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'bg_color' }}{% else %}{{ task_categories.RD.bg_color }}{% endif %};">
                         <span class="category-badge" style="background-color: {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">R&D</span>
                         <h4 style="margin: 0;">{% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'name' }}{% else %}{{ task_categories.RD.name }}{% endif %} ({% with rd_count=projects|count_tasks_by_category:"R&D" %}{{ rd_count }}{% endwith %})</h4>
@@ -411,7 +411,7 @@
                 </div>
                 
                 <!-- UAT分类 -->
-                <div class="task-category-section mb-5" style="border-left: 4px solid {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">
+                <div class="task-category-section" style="flex: 1; min-width: 300px; border-left: 4px solid {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">
                     <div class="category-header" style="background-color: {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'bg_color' }}{% else %}{{ task_categories.UAT.bg_color }}{% endif %};">
                         <span class="category-badge" style="background-color: {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">UAT</span>
                         <h4 style="margin: 0;">{% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'name' }}{% else %}{{ task_categories.UAT.name }}{% endif %} ({% with uat_count=projects|count_tasks_by_category:"UAT" %}{{ uat_count }}{% endwith %})</h4>
@@ -450,7 +450,7 @@
                 </div>
                 
                 <!-- Support分类 -->
-                <div class="task-category-section" style="border-left: 4px solid {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">
+                <div class="task-category-section" style="flex: 1; min-width: 300px; border-left: 4px solid {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">
                     <div class="category-header" style="background-color: {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'bg_color' }}{% else %}{{ task_categories.Support.bg_color }}{% endif %};">
                         <span class="category-badge" style="background-color: {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">Support</span>
                         <h4 style="margin: 0;">{% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'name' }}{% else %}{{ task_categories.Support.name }}{% endif %} ({% with support_count=projects|count_tasks_by_category:"Support" %}{{ support_count }}{% endwith %})</h4>

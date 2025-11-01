@@ -208,18 +208,41 @@ function loadStepImages() {
             logSystem.debug('已清空现有图片容器内容');
         }
         
-        // 创建图片网格容器
+        // 创建图片网格容器 - 改为自适应行布局
         const imageGrid = document.createElement('div');
         imageGrid.style.cssText = `
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             margin-top: 10px;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) transparent;
         `;
         
-        // 添加前3张图片作为缩略图
-        const imagesToShow = images.slice(0, 3);
-        imagesToShow.forEach((image, index) => {
+        // 为imageGrid添加滚动条样式
+        const styleId = 'imageGridScrollbarStyle';
+        if (!document.getElementById(styleId)) {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                .step-image div::-webkit-scrollbar {
+                    height: 6px;
+                }
+                .step-image div::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .step-image div::-webkit-scrollbar-thumb {
+                    background-color: var(--primary-color);
+                    border-radius: 10px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 显示所有图片作为缩略图
+        images.forEach((image, index) => {
             // 处理图片URL格式 - 简化逻辑并改进调试
             logSystem.group(`===== 处理图片${index + 1}的URL =====`);
             
@@ -259,30 +282,34 @@ function loadStepImages() {
             
             const thumbnailContainer = document.createElement('div');
             thumbnailContainer.style.cssText = `
-                width: 100px;
-                height: 100px;
+                width: 120px;
+                height: 120px;
+                flex-shrink: 0;
                 overflow: hidden;
                 border-radius: 4px;
-                border: 1px solid #ccc;
+                border: 1px solid var(--border-color);
                 position: relative;
+                display: flex;
+                flex-direction: column;
+                background-color: white;
+                box-shadow: var(--shadow-sm);
+                transition: all 0.2s ease;
+                /* 确保单张图片也能明显显示为缩略图 */
+                min-width: 120px;
+                cursor: pointer;
+            `;
+            
+            // 图片容器
+            const imgContainer = document.createElement('div');
+            imgContainer.style.cssText = `
+                width: 100%;
+                height: 85px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 background-color: #f9f9f9;
-                margin: 5px;
+                overflow: hidden;
             `;
-            
-            // 添加鼠标悬停效果
-            thumbnailContainer.addEventListener('mouseenter', () => {
-                thumbnailContainer.style.transform = 'scale(1.05)';
-                thumbnailContainer.style.transition = 'transform 0.2s';
-                thumbnailContainer.style.zIndex = '10';
-            });
-            
-            thumbnailContainer.addEventListener('mouseleave', () => {
-                thumbnailContainer.style.transform = 'scale(1)';
-                thumbnailContainer.style.zIndex = '1';
-            });
             
             const img = document.createElement('img');
             img.src = imageUrl;
@@ -291,7 +318,23 @@ function loadStepImages() {
                 max-width: 100%;
                 max-height: 100%;
                 object-fit: cover;
+                transition: transform 0.2s ease;
             `;
+            
+            // 添加鼠标悬停效果
+            thumbnailContainer.addEventListener('mouseenter', () => {
+                thumbnailContainer.style.transform = 'scale(1.05)';
+                thumbnailContainer.style.boxShadow = 'var(--shadow-md)';
+                thumbnailContainer.style.zIndex = '10';
+                img.style.transform = 'scale(1.05)';
+            });
+            
+            thumbnailContainer.addEventListener('mouseleave', () => {
+                thumbnailContainer.style.transform = 'scale(1)';
+                thumbnailContainer.style.boxShadow = 'var(--shadow-sm)';
+                thumbnailContainer.style.zIndex = '1';
+                img.style.transform = 'scale(1)';
+            });
             
             // 添加图片加载状态
             const loadingIndicator = document.createElement('div');
@@ -308,8 +351,9 @@ function loadStepImages() {
                 justify-content: center;
                 color: #666;
                 font-size: 12px;
+                z-index: 2;
             `;
-            thumbnailContainer.appendChild(loadingIndicator);
+            imgContainer.appendChild(loadingIndicator);
             
             img.onload = function() {
                 loadingIndicator.remove();
@@ -323,7 +367,24 @@ function loadStepImages() {
             
             // 移除点击查看大图功能
             
-            thumbnailContainer.appendChild(img);
+            // 添加图片到图片容器
+            imgContainer.appendChild(img);
+            
+            // 添加图片容器到缩略图容器
+            thumbnailContainer.appendChild(imgContainer);
+            
+            // 添加图片计数
+            const imageCount = document.createElement('div');
+            imageCount.textContent = `图${index + 1}`;
+            imageCount.style.cssText = `
+                padding: 4px 6px;
+                font-size: 11px;
+                color: var(--text-secondary);
+                background-color: white;
+                text-align: center;
+                border-top: 1px solid var(--border-color);
+            `;
+            thumbnailContainer.appendChild(imageCount);
             
             // 如果图片有描述，添加到容器中
             if (image.description) {
@@ -331,7 +392,7 @@ function loadStepImages() {
                 desc.textContent = image.description;
                 desc.style.cssText = `
                     position: absolute;
-                    bottom: 0;
+                    top: 85px;
                     left: 0;
                     right: 0;
                     background: rgba(0, 0, 0, 0.7);
@@ -343,15 +404,8 @@ function loadStepImages() {
                     text-overflow: ellipsis;
                     opacity: 0;
                     transition: opacity 0.2s;
+                    z-index: 3;
                 `;
-                
-                thumbnailContainer.addEventListener('mouseenter', () => {
-                    desc.style.opacity = '1';
-                });
-                
-                thumbnailContainer.addEventListener('mouseleave', () => {
-                    desc.style.opacity = '0';
-                });
                 
                 thumbnailContainer.appendChild(desc);
             }
@@ -359,18 +413,20 @@ function loadStepImages() {
             imageGrid.appendChild(thumbnailContainer);
         });
         
-        // 如果图片数量超过3张，显示提示
-        if (images.length > 3) {
-            const moreHint = document.createElement('div');
-            moreHint.textContent = `共${images.length}张，显示前3张`;
-            moreHint.style.cssText = `
-                width: 100%;
+        // 添加图片总数提示
+        if (images.length > 0) {
+            const totalHint = document.createElement('div');
+            totalHint.textContent = `共${images.length}张图片`;
+            totalHint.style.cssText = `
+                margin-top: 8px;
+                padding: 5px;
                 text-align: center;
                 font-size: 12px;
-                color: #999;
-                margin-top: 5px;
+                color: var(--text-secondary);
+                background-color: var(--bg-color);
+                border-radius: 4px;
             `;
-            imageGrid.appendChild(moreHint);
+            imageContainer.appendChild(totalHint);
         }
         
         imageContainer.appendChild(imageGrid);
