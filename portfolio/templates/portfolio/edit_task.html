@@ -1,0 +1,322 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load portfolio_filters %}
+
+{% block title %}修改任务 - {{ task.title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* CSS变量定义 */
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --secondary-color: #3a0ca3;
+        --success-color: #4cc9f0;
+        --warning-color: #f72585;
+        --bg-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --border-color: #e9ecef;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --transition: all 0.3s ease;
+    }
+    
+    /* 全局样式优化 */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* 页面标题区域 */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: var(--radius-lg);
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    /* 表单样式 */
+    .form-section {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-color);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: var(--transition);
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: flex-end;
+    }
+    
+    .form-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    /* 图片上传相关样式 */
+    .image-upload-section {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background-color: var(--bg-color);
+    }
+    
+    .image-upload-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .file-name {
+        flex: 1;
+        min-width: 200px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .image-preview {
+        margin-top: 1rem;
+        max-width: 100%;
+        border: 1px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        min-height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        padding: 1rem;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .no-preview {
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+    
+    /* 进度条样式 */
+    .progress-input-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .progress-input {
+        width: 80px;
+        text-align: center;
+    }
+    
+    .progress-preview {
+        flex: 1;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-preview-bar {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+    <!-- 页面标题 -->
+    <section class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">首页</a> &gt; 
+                <a href="{% url 'project_detail' project_id=project.id %}">{{ project.name }}</a> &gt; 
+                <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}">{{ task.title }}</a> &gt; 
+                <span>修改任务</span>
+            </div>
+            <h1>修改任务</h1>
+        </div>
+    </section>
+
+    <!-- 表单部分 -->
+    <section class="form-section">
+        <div class="container">
+            <h2 class="form-title">修改任务信息</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="title" class="form-label">任务标题</label>
+                    <input type="text" id="title" name="title" class="form-input" value="{{ task.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category" class="form-label">任务分类</label>
+                    <select id="category" name="category" class="form-select" required>
+                        {% for key, value in task_categories.items %}
+                            <option value="{{ key }}" {% if task.category == key %}selected{% endif %}>
+                                {{ value.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="workshop" class="form-label">Workshop次数</label>
+                    <select id="workshop" name="workshop" class="form-select" required>
+                        {% for i in workshop_range %}
+                            <option value="{{ i }}" {% if task.workshop == i %}selected{% endif %}>
+                                第{% if i == 1 %}一{% elif i == 2 %}二{% elif i == 3 %}三{% elif i == 4 %}四{% elif i == 5 %}五{% endif %}次
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="progress" class="form-label">完成进度</label>
+                    <div class="progress-input-group">
+                        <input type="number" id="progress" name="progress" class="form-input progress-input" 
+                               min="0" max="100" value="{{ task.progress }}" required>
+                        <span>%</span>
+                        <div class="progress-preview">
+                            <div class="progress-preview-bar" style="width: {{ task.progress }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description" class="form-label">任务描述</label>
+                    <textarea id="description" name="description" class="form-textarea" required>{{ task.description }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="process" class="form-label">实现过程（每行代表一个步骤）</label>
+                    <div class="process-editor">
+                        <textarea id="process" name="process" class="form-textarea" rows="10">{% for step in task.process|split:'\n' %}{{ step }}{% if not forloop.last %}\n{% endif %}{% endfor %}</textarea>
+                        
+                        <!-- 图片上传功能已移除 -->
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}" class="btn btn-secondary">
+                        取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        保存修改
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // 进度条实时预览
+        document.getElementById('progress').addEventListener('input', function(e) {
+            const value = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+            document.querySelector('.progress-preview-bar').style.width = value + '%';
+        });
+        
+        // 模态框简单控制
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-danger')) {
+                document.getElementById('deleteModal').classList.add('show');
+            }
+            if (e.target.classList.contains('close') || e.target.classList.contains('btn-secondary') && e.target.textContent.trim() === '取消') {
+                const modal = document.getElementById('deleteModal');
+                if (modal) modal.classList.remove('show');
+            }
+        });
+        
+        // 图片上传相关JavaScript已移除
+    </script>
+{% endblock %}

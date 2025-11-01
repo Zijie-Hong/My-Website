@@ -1,0 +1,461 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load portfolio_filters %}
+
+{% block title %}项目管理系统 - 首页{% endblock %}
+
+{% block content %}
+    <style>
+        /* 基础样式 */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --text-color: #333;
+            --text-muted: #666;
+            --bg-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 25px;
+            --transition: all 0.3s ease;
+        }
+        
+        /* 毛玻璃效果基础样式 */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* 卡片样式 */
+        .modern-card {
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            overflow: hidden;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .modern-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            transition: var(--transition);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 项目卡片样式 */
+        .project-overview-card {
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .project-description {
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
+        }
+        .project-overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+        .project-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        .project-description {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            
+        }
+        
+        /* 任务分类样式 */
+        .task-category-section {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+        }
+        .task-category-section:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        .category-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .category-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        /* 任务项样式 */
+        .task-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* 进度条样式 */
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        
+        /* 统计卡片样式 */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .stat-label {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+        
+        /* 分类容器动画 */
+        .categories-container {
+            margin-top: 3rem;
+        }
+        
+        /* 现代输入框和下拉框样式 */
+        .modern-select,
+        .modern-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: white;
+        }
+        .modern-select:focus,
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .project-overview-card {
+                padding: 1.5rem;
+            }
+            .project-title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+    
+    <!-- 英雄区域 -->
+    <section class="hero-section" style="background: var(--primary-gradient); color: white; padding: 6rem 0; position: relative; overflow: hidden;">
+        <!-- 毛玻璃装饰元素 -->
+        <div style="position: absolute; top: -10%; left: -10%; width: 30%; height: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(50px); border-radius: 50%; transform: rotate(-15deg);"></div>
+        <div style="position: absolute; bottom: -15%; right: -10%; width: 40%; height: 70%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(50px); border-radius: 50%;"></div>
+        
+        <div class="container text-center" style="position: relative; z-index: 1;">
+            <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">项目任务管理系统</h1>
+            <p style="font-size: 1.25rem; max-width: 700px; margin: 0 auto; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);">高效管理项目与任务，追踪工作进度</p>
+        </div>
+    </section>
+
+    <!-- 项目概览区域 - 三模块一排显示 -->
+    <section class="projects-overview-section" style="padding: 5rem 0; background-color: var(--bg-light);">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">项目概览</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <!-- AFP项目 -->
+                <div>
+                    <div class="project-overview-card">
+                        <div class="project-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3 class="project-title">AFP项目</h3>
+                        <p class="project-description">高级金融平台项目，专注于开发下一代金融解决方案，包含交易系统和数据分析功能。</p>
+                        <div class="text-center">
+                            <a href="{% url 'project_detail' project_id=1 %}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AAP项目 -->
+                <div>
+                    <div class="project-overview-card">
+                        <div class="project-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="project-title">AAP项目</h3>
+                        <p class="project-description">高级应用平台项目，致力于构建跨平台移动应用框架，提供统一的用户体验和开发接口。</p>
+                        <div class="text-center">
+                            <a href="{% url 'project_detail' project_id=2 %}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 其他项目 -->
+                <div>
+                    <div class="project-overview-card">
+                        <div class="project-icon">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <h3 class="project-title">其他项目</h3>
+                        <p class="project-description">包含正在规划和开发中的其他小型项目，提供创新解决方案和技术探索。</p>
+                        <div class="text-center">
+                            <a href="{% url 'project_detail' project_id=3 %}" class="btn btn-primary">查看详情</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 任务分类展示区域 -->
+    <section class="categories-section" style="padding: 5rem 0; background-color: white;">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">任务分类</h2>
+            
+            <div class="categories-container">
+                <!-- R&D分类 -->
+                <div class="task-category-section mb-5" style="border-left: 4px solid {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                    <div class="category-header" style="background-color: {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'bg_color' }}{% else %}{{ task_categories.RD.bg_color }}{% endif %};">
+                        <span class="category-badge" style="background-color: {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">R&D</span>
+                        <h4 style="margin: 0;">{% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'name' }}{% else %}{{ task_categories.RD.name }}{% endif %} ({% with rd_count=projects|count_tasks_by_category:"R&D" %}{{ rd_count }}{% endwith %})</h4>
+                    </div>
+                    <div class="category-tasks p-4">
+                        <div class="row gap-3">
+                            {% for project in projects %}
+                                {% for task in project.tasks %}
+                                    {% if task.category == 'R&D' %}
+                                    <div class="col-md-4">
+                                        <div class="task-item" 
+                                             onclick="window.location.href='{% url 'task_detail' project_id=project.id task_id=task.id %}'">
+                                            <div class="task-header mb-2">
+                                                <h5 style="margin: 0; font-size: 1.1rem;">{{ task.title }}</h5>
+                                                <span class="text-muted" style="font-size: 0.875rem;">{{ project.name }} | 第{{ task.workshop }}次workshop</span>
+                                            </div>
+                                            <div class="task-progress">
+                                                <div class="progress-bar mb-1">
+                                                    <div class="progress-fill" 
+                                                         style="width: {{ task.progress }}%; background-color: {% if 'R&D' in task_categories %}{{ task_categories|get:'R&D'|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                                    </div>
+                                                </div>
+                                                <span class="progress-text" style="font-size: 0.875rem; color: var(--text-muted);">{{ task.progress }}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% empty %}
+                                <div class="col-12">
+                                    <div class="no-tasks text-center p-4 text-muted">暂无R&D任务</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- UAT分类 -->
+                <div class="task-category-section mb-5" style="border-left: 4px solid {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">
+                    <div class="category-header" style="background-color: {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'bg_color' }}{% else %}{{ task_categories.UAT.bg_color }}{% endif %};">
+                        <span class="category-badge" style="background-color: {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">UAT</span>
+                        <h4 style="margin: 0;">{% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'name' }}{% else %}{{ task_categories.UAT.name }}{% endif %} ({% with uat_count=projects|count_tasks_by_category:"UAT" %}{{ uat_count }}{% endwith %})</h4>
+                    </div>
+                    <div class="category-tasks p-4">
+                        <div class="row gap-3">
+                            {% for project in projects %}
+                                {% for task in project.tasks %}
+                                    {% if task.category == 'UAT' %}
+                                    <div class="col-md-4">
+                                        <div class="task-item" 
+                                             onclick="window.location.href='{% url 'task_detail' project_id=project.id task_id=task.id %}'">
+                                            <div class="task-header mb-2">
+                                                <h5 style="margin: 0; font-size: 1.1rem;">{{ task.title }}</h5>
+                                                <span class="text-muted" style="font-size: 0.875rem;">{{ project.name }} | 第{{ task.workshop }}次workshop</span>
+                                            </div>
+                                            <div class="task-progress">
+                                                <div class="progress-bar mb-1">
+                                                    <div class="progress-fill" 
+                                                         style="width: {{ task.progress }}%; background-color: {% if 'UAT' in task_categories %}{{ task_categories|get:'UAT'|get:'color' }}{% else %}{{ task_categories.UAT.color }}{% endif %};">
+                                                    </div>
+                                                </div>
+                                                <span class="progress-text" style="font-size: 0.875rem; color: var(--text-muted);">{{ task.progress }}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% empty %}
+                                <div class="col-12">
+                                    <div class="no-tasks text-center p-4 text-muted">暂无UAT任务</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Support分类 -->
+                <div class="task-category-section" style="border-left: 4px solid {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">
+                    <div class="category-header" style="background-color: {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'bg_color' }}{% else %}{{ task_categories.Support.bg_color }}{% endif %};">
+                        <span class="category-badge" style="background-color: {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">Support</span>
+                        <h4 style="margin: 0;">{% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'name' }}{% else %}{{ task_categories.Support.name }}{% endif %} ({% with support_count=projects|count_tasks_by_category:"Support" %}{{ support_count }}{% endwith %})</h4>
+                    </div>
+                    <div class="category-tasks p-4">
+                        <div class="row gap-3">
+                            {% for project in projects %}
+                                {% for task in project.tasks %}
+                                    {% if task.category == 'Support' %}
+                                    <div class="col-md-4">
+                                        <div class="task-item" 
+                                             onclick="window.location.href='{% url 'task_detail' project_id=project.id task_id=task.id %}'">
+                                            <div class="task-header mb-2">
+                                                <h5 style="margin: 0; font-size: 1.1rem;">{{ task.title }}</h5>
+                                                <span class="text-muted" style="font-size: 0.875rem;">{{ project.name }} | 第{{ task.workshop }}次workshop</span>
+                                            </div>
+                                            <div class="task-progress">
+                                                <div class="progress-bar mb-1">
+                                                    <div class="progress-fill" 
+                                                         style="width: {{ task.progress }}%; background-color: {% if 'Support' in task_categories %}{{ task_categories|get:'Support'|get:'color' }}{% else %}{{ task_categories.Support.color }}{% endif %};">
+                                                    </div>
+                                                </div>
+                                                <span class="progress-text" style="font-size: 0.875rem; color: var(--text-muted);">{{ task.progress }}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% empty %}
+                                <div class="col-12">
+                                    <div class="no-tasks text-center p-4 text-muted">暂无Support任务</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计概览 -->
+    <section class="stats-section" style="padding: 5rem 0; background-color: var(--bg-light);">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">任务统计</h2>
+            <div class="row gap-5 justify-content-center">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ projects|length }}</div>
+                        <div class="stat-label">活跃项目</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">
+                            {% with total_tasks=projects|sum_project_tasks %}
+                            {{ total_tasks }}
+                            {% endwith %}
+                        </div>
+                        <div class="stat-label">总任务数</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-number">
+                            {% with completed_tasks=projects|count_completed_tasks %}
+                            {{ completed_tasks }}
+                            {% endwith %}
+                        </div>
+                        <div class="stat-label">已完成任务</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

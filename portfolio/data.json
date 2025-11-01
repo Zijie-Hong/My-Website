@@ -1,0 +1,86 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "name": "AFP",
+      "description": "Advanced Financial Platform - 高级金融平台系统，提供实时交易和风险管理功能。",
+      "tasks": [
+        {
+          "id": 101,
+          "title": "交易算法优化",
+          "category": "R&D",
+          "technology": "Python, C++",
+          "workshop": 1,
+          "description": "优化高频交易算法，提升执行效率和稳定性。",
+          "process": "1. 性能瓶颈分析\n2. 算法重构\n3. 并发优化\n4. 回测验证",
+          "results": "算法执行速度提升35%，资源占用降低20%。",
+          "progress": 85
+        },
+        {
+          "id": 102,
+          "title": "风险控制模块测试",
+          "category": "UAT",
+          "technology": "JMeter, Postman",
+          "workshop": 2,
+          "description": "验证风险控制策略在各种市场条件下的有效性。",
+          "process": "1. 测试场景设计\n2. 压力测试执行\n3. 边界测试\n4. 报告生成",
+          "results": "成功识别并修复3个潜在风险点，系统稳定性提升。",
+          "progress": 90
+        },
+        {
+          "id": 103,
+          "title": "客户报表功能支持",
+          "category": "Support",
+          "technology": "SQL, Excel",
+          "workshop": 1,
+          "description": "为企业客户提供定制化财务报表和数据分析服务。",
+          "process": "1. 需求收集\n2. 查询开发\n3. 数据验证\n4. 交付培训",
+          "results": "客户满意度提升40%，报表生成时间缩短50%。",
+          "progress": 100
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "AAP",
+      "description": "Automated Analytics Platform - 自动化分析平台，实现数据的智能处理和可视化。",
+      "tasks": [
+        {
+          "id": 201,
+          "title": "机器学习模型训练",
+          "category": "R&D",
+          "technology": "TensorFlow, PyTorch",
+          "workshop": 2,
+          "description": "开发预测分析模型，实现业务趋势的智能预测。",
+          "process": "1. 数据预处理\n2. 特征工程\n3. 模型训练\n4. 模型评估",
+          "results": "预测准确率达到89%，超过业务目标10个百分点。",
+          "progress": 70
+        },
+        {
+          "id": 202,
+          "title": "数据准确性验证",
+          "category": "UAT",
+          "technology": "SQL, Pandas",
+          "workshop": 3,
+          "description": "验证数据分析结果的准确性和一致性。",
+          "process": "数据样本选择\r\n结果对比分析\r\n异常处理\r\n报告生成",
+          "results": "数据准确率达到99.8%，符合业务要求。",
+          "progress": 80,
+          "workshop_text": "第三次workshop",
+          "step_images": [
+            {
+              "step": 2,
+              "url": "/media/task_step_images/task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "file_name": "task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "filename": "task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "description": "无描述"
+            },
+            {
+              "step": 2,
+              "url": "/media/task_step_images/task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
+              "file_name": "task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
+              "filename": "task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
+              "description": "无描述"
+            }
+          ],
+          "db_images": 

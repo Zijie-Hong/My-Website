@@ -1,0 +1,479 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load portfolio_filters %}
+
+{% block title %}任务列表 - 项目管理系统{% endblock %}
+
+{% block content %}
+<style>
+    /* CSS变量定义 */
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --secondary-color: #3a0ca3;
+        --success-color: #4cc9f0;
+        --warning-color: #f72585;
+        --bg-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --border-color: #e9ecef;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --transition: all 0.3s ease;
+    }
+    
+    /* 全局样式优化 */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* 页面标题区域 */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        text-align: center;
+        border-radius: var(--radius-lg);
+    }
+    
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    .page-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+    
+    .add-task-main {
+        background: white;
+        color: var(--primary-color);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .add-task-main:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* 筛选区域 */
+    .filter-section {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .filter-group label {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+    
+    /* 现代风格下拉框 */
+    .filter-group select {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background-color: white;
+        font-size: 1rem;
+        transition: var(--transition);
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236c757d'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+    }
+    
+    .filter-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .filter-group select:hover {
+        border-color: var(--primary-light);
+    }
+    
+    /* 任务列表区域 */
+    .tasks-section {
+        margin-bottom: 3rem;
+    }
+    
+    .project-group {
+        margin-bottom: 2.5rem;
+    }
+    
+    .project-group-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .tasks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    /* 任务卡片样式 */
+    .task-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: var(--transition);
+        border-left: 4px solid #ccc;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .task-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .task-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+    
+    .task-title a {
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .task-title a:hover {
+        color: var(--primary-color);
+    }
+    
+    .task-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .task-category-badge,
+    .task-workshop-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .task-content {
+        padding: 1.5rem;
+    }
+    
+    .task-description {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    /* 进度条样式 */
+    .task-progress {
+        margin-bottom: 1.5rem;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background-color: var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 4px;
+    }
+    
+    /* 按钮样式 */
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-secondary {
+        background-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+        background-color: #dee2e6;
+        transform: translateY(-1px);
+    }
+    
+    .btn-sm {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* 空状态 */
+    .no-tasks-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    
+    .empty-state {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 2px dashed var(--border-color);
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .filter-controls {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            width: 100%;
+        }
+        
+        .tasks-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+    <!-- 页面标题 -->
+    <section class="page-header">
+        <div class="container">
+            <h1>任务列表</h1>
+            <p>浏览和管理所有任务</p>
+            {% if all_projects %}
+            <a href="{% url 'add_task' project_id=all_projects.0.id %}" class="btn btn-primary add-task-main">
+                <i class="fas fa-plus"></i> 新增任务
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 筛选和搜索 -->
+    <section class="filter-section">
+        <div class="container">
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="project-filter">项目：</label>
+                    <select id="project-filter" onchange="this.form.submit()" form="task-filter-form">
+                        <option value="all">全部项目</option>
+                        {% for project in all_projects %}
+                        <option value="{{ project.id }}" {% if selected_project == project.id %}selected{% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="category-filter">分类：</label>
+                    <select id="category-filter" onchange="this.form.submit()" form="task-filter-form">
+                        <option value="all">全部分类</option>
+                        {% for key, category in task_categories.items %}
+                        <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ category.display_name|default:category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="workshop-filter">Workshop：</label>
+                    <select id="workshop-filter" onchange="this.form.submit()" form="task-filter-form">
+                        <option value="all">全部Workshop</option>
+                        {% for i in workshop_range %}
+                        <option value="{{ i }}" {% if selected_workshop == i|stringformat:"s" %}selected{% endif %}>第{% if i == 1 %}一{% elif i == 2 %}二{% elif i == 3 %}三{% elif i == 4 %}四{% elif i == 5 %}五{% endif %}次</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <form id="task-filter-form" method="get" style="display: none;">
+                    <input type="hidden" id="project-input" name="project" value="">
+                    <input type="hidden" id="category-input" name="category" value="">
+                    <input type="hidden" id="workshop-input" name="workshop" value="">
+                </form>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        // 统一处理筛选器变化的函数
+        function handleFilterChange() {
+            const form = document.getElementById('task-filter-form');
+            const projectInput = document.getElementById('project-input');
+            const categoryInput = document.getElementById('category-input');
+            const workshopInput = document.getElementById('workshop-input');
+            const projectFilter = document.getElementById('project-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const workshopFilter = document.getElementById('workshop-filter');
+            
+            // 设置所有筛选值
+            projectInput.value = projectFilter.value;
+            categoryInput.value = categoryFilter.value;
+            workshopInput.value = workshopFilter.value;
+            
+            // 提交表单
+            form.submit();
+        }
+        
+        // 初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            const projectFilter = document.getElementById('project-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const workshopFilter = document.getElementById('workshop-filter');
+            
+            if (projectFilter && categoryFilter && workshopFilter) {
+                projectFilter.addEventListener('change', handleFilterChange);
+                categoryFilter.addEventListener('change', handleFilterChange);
+                workshopFilter.addEventListener('change', handleFilterChange);
+            }
+        });
+    </script>
+
+    <!-- 任务列表 -->
+    <section class="tasks-section">
+        <div class="container">
+            <!-- 按项目分组显示 -->
+            {% for project in projects_with_tasks %}
+            <div class="project-group">
+                <h2 class="project-group-title">{{ project.name }}</h2>
+                
+                <div class="tasks-grid">
+                    {% for task in project.tasks %}
+                    <div class="task-card" 
+                         style="border-left-color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                        <div class="task-header">
+                            <h3 class="task-title">
+                                <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}">{{ task.title }}</a>
+                            </h3>
+                            <div class="task-badges">
+                                <span class="task-category-badge" 
+                                       style="background-color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'bg_color' }}{% else %}{{ task_categories.RD.bg_color }}{% endif %}; 
+                                              color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                     {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'display_name' }}{% else %}{{ task_categories.RD.display_name }}{% endif %}
+                                </span>
+                                <span class="task-workshop-badge">
+                                    第{% if task.workshop == 1 %}一{% elif task.workshop == 2 %}二{% elif task.workshop == 3 %}三{% elif task.workshop == 4 %}四{% elif task.workshop == 5 %}五{% endif %}次workshop
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="task-content">
+                            <p class="task-description">{{ task.description|truncatewords:30 }}</p>
+                            
+                            <div class="task-progress">
+                                <div class="progress-label">
+                                    <span>进度</span>
+                                    <span>{{ task.progress }}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" 
+                                         style="width: {{ task.progress }}%; 
+                                                 background-color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-actions">
+                                <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}" class="btn btn-secondary btn-sm">
+                                    查看详情
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-tasks-message">
+                        暂无符合条件的任务
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if projects_with_tasks|length == 0 %}
+            <div class="no-tasks-message empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h3>暂无任务</h3>
+                <p>还没有创建任何任务，点击下方按钮开始添加</p>
+                <a href="{% url 'add_task' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新增任务
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+
+{% endblock %}

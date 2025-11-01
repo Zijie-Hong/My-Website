@@ -1,0 +1,2573 @@
+{% extends 'portfolio/base.html' %}
+{% load static %}
+{% load portfolio_filters %}
+
+{% block title %}{{ task.title }} - 任务详情{% endblock title %}
+
+{% block extra_js %}
+<!-- 移除全屏功能的JavaScript -->
+<script src="{% static 'portfolio/js/task_images.js' %}"></script>
+<script src="{% static 'portfolio/js/task_edit.js' %}"></script>
+<script src="{% static 'portfolio/js/task_delete.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<script>
+    // 初始化任务数据
+    window.task = {
+        id: {{ task.id|default:'null' }},
+        title: '{{ task.title|escapejs|default:'' }}',
+        step_images: [
+            {% if task.step_images %}
+                {% for step_image in task.step_images %}
+                {
+                    id: {{ step_image.id|default:'null' }},
+                    step: {{ step_image.step|default:'1' }},
+                    url: '{{ step_image.url|default:'' }}',
+                    description: '{{ step_image.description|escapejs|default:'' }}',
+                    file_name: '{{ step_image.file_name|default:'' }}'
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% endif %}
+        ]
+    };
+    
+    // 确保step_images是数组
+    if (!Array.isArray(window.task.step_images)) {
+        window.task.step_images = [];
+    }
+    
+    // 添加调试信息
+    console.log('Task images data:', window.task.step_images);
+</script>
+<style>
+    /* CSS变量定义 */
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --secondary-color: #3a0ca3;
+        --success-color: #4cc9f0;
+        --warning-color: #f72585;
+        --bg-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --border-color: #e9ecef;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --transition: all 0.3s ease;
+    }
+    
+    /* 全局样式优化 */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* 页面标题区域 */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: var(--radius-lg);
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .breadcrumb a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .breadcrumb a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+    
+    .breadcrumb span {
+        color: white;
+        font-weight: 500;
+    }
+    
+    /* 任务详情布局 */
+    .task-detail-section {
+        margin-bottom: 3rem;
+    }
+    
+    .task-detail-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+    }
+    
+    /* 主内容区域 */
+    .task-detail-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    /* 任务概览卡片 */
+    .task-overview {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        border-left: 4px solid #ccc;
+    }
+    
+    .task-header-info {
+        margin-bottom: 1.5rem;
+    }
+    
+    .task-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .task-category-badge,
+    .task-workshop-badge {
+        padding: 0.35rem 1rem;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .task-description-full {
+        color: var(--text-primary);
+        line-height: 1.7;
+        font-size: 1.05rem;
+        margin: 0;
+    }
+    
+    /* 进度条 */
+    .task-progress-large {
+        margin-top: 1rem;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    
+    .progress-bar {
+        height: 12px;
+        background-color: var(--border-color);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.5s ease;
+    }
+    
+    /* 任务章节 */
+    .task-section {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+    }
+    
+    .task-section h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 0.75rem;
+    }
+    
+    /* 实现过程 */
+    .process-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    /* 实现过程样式 */
+    .process-step {
+        display: flex;
+        margin-bottom: 1.5rem;
+        background-color: var(--card-background);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .step-number {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .step-content {
+        flex: 1;
+        padding: 1rem;
+    }
+    
+    .step-text {
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    .step-image {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .step-image-card {
+        max-width: 100%;
+        background-color: var(--card-background);
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .step-image-preview {
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+    
+    .step-image-description {
+        padding: 0.5rem;
+        margin: 0;
+        background-color: var(--background-color);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        text-align: center;
+    }
+    
+    .no-process {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-secondary);
+        background-color: var(--card-background);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+    
+    /* 编辑模态框样式 */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-dialog {
+        width: 90%;
+        max-width: 800px;
+        background-color: white;
+        border-radius: 8px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-content {
+        padding: 1.5rem;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+    
+    .modal-body {
+        margin-bottom: 1rem;
+    }
+    
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    /* 优化图片显示 */
+    .task-image-container {
+        margin: 1rem 0;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: white;
+        text-align: center;
+        transition: var(--transition);
+    }
+    
+    .task-image-container:hover {
+        box-shadow: 'var(--shadow-md)';
+    }
+    
+    .task-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.3s ease;
+        cursor: default;
+    }
+    
+    .task-image:hover {
+        transform: scale(1.02);
+    }
+    
+    /* 任务图片样式 */
+    .task-image-container {
+        margin: 1rem 0;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: white;
+        text-align: center;
+    }
+    
+    .task-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* 技术标签 */
+    .tech-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .tech-tag {
+        background: var(--bg-color);
+        color: var(--text-primary);
+        padding: 0.4rem 1rem;
+        border-radius: 100px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .tech-tag:hover {
+        background: var(--primary-light);
+        color: white;
+    }
+    
+    /* 侧边栏 */
+    .task-detail-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .sidebar-section {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+    }
+    
+    .sidebar-section h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+    }
+    
+    /* 信息项 */
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .info-value {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .info-value a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+    
+    /* 状态样式 */
+    .status-completed {
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    .status-in-progress {
+        color: #ffc107;
+        font-weight: 600;
+    }
+    
+    .status-not-started {
+        color: #6c757d;
+        font-weight: 600;
+    }
+    
+    /* 相关任务 */
+    .related-tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .related-task-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--bg-color);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .related-task-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    .related-task-item h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    
+    .related-task-workshop {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    
+    .no-related-tasks {
+        color: var(--text-secondary);
+        text-align: center;
+        padding: 1rem;
+        font-style: italic;
+    }
+    
+    /* 按钮样式 */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        font-size: 0.95rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+        background-color: #dee2e6;
+        transform: translateY(-1px);
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+        transform: translateY(-1px);
+    }
+    
+    /* 模态框样式 */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-dialog {
+        background: white;
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    
+    .close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 992px) {
+        .task-detail-wrapper {
+            grid-template-columns: 1fr;
+        }
+        
+        .task-detail-sidebar {
+            order: -1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .task-overview,
+        .task-section,
+        .sidebar-section {
+            padding: 1.5rem;
+        }
+        
+        .process-step {
+            gap: 0.75rem;
+        }
+    }
+    
+    /* 任务图片上传和显示区域 */
+    .task-images-section {
+        margin: 2rem 0;
+    }
+    
+    .image-upload-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .image-upload-card h3 {
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        color: var(--text-primary);
+    }
+    
+    .image-upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        transition: var(--transition);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        align-self: flex-start;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-1px);
+    }
+    
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .image-card {
+        background: white;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+    
+    .image-card:hover {
+        box-shadow: 'var(--shadow-md)';
+        transform: translateY(-2px);
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .image-info {
+        padding: 1rem;
+    }
+    
+    .image-description {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+    
+    .image-upload-date {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    
+    .message {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+    }
+    
+    .message-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .message-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+    <!-- 页面标题 -->
+    <section class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">首页</a> &gt; 
+                <a href="{% url 'project_detail' project_id=project.id %}">{{ project.name }}</a> &gt; 
+                <span>{{ task.title }}</span>
+            </div>
+            <h1>{{ task.title }}</h1>
+        </div>
+    </section>
+
+    <!-- 任务详情 -->
+    <section class="task-detail-section">
+        <div class="container">
+            <div class="task-detail-wrapper">
+                <!-- 左侧内容 -->
+                <div class="task-detail-main">
+                    <!-- 任务概览 -->
+                    <div class="task-overview" 
+                         style="border-left-color: {{ task_categories|get:task.category|default:task_categories.Support }}.color;">
+                        <div class="task-header-info">
+                            <div class="task-badges">
+                                <span class="task-category-badge" 
+                                      style="background-color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'bg_color' }}{% else %}{{ task_categories.RD.bg_color }}{% endif %}; 
+                                             color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                    {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'name' }}{% else %}{{ task_categories.RD.name }}{% endif %}
+                                </span>
+                                <span class="task-workshop-badge">
+                                    第{% if task.workshop == 1 %}一{% elif task.workshop == 2 %}二{% elif task.workshop == 3 %}三{% elif task.workshop == 4 %}四{% elif task.workshop == 5 %}五{% endif %}次workshop
+                                </span>
+                            </div>
+
+                <!-- PPT浏览模式模态框 -->
+                <div id="processBrowseModal" style="display: none; position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9);">
+                    <div class="modal-dialog" role="document" style="max-width: 90%; width: 90%; margin: 1.75rem auto; max-height: 90vh; position: relative; z-index: 1060;">
+                        <div class="modal-content" style="border-radius: 0; box-shadow: none; border: none; overflow: hidden; background-color: transparent;">
+                            <div class="modal-header" style="background-color: rgba(0, 0, 0, 0.8); color: white; display: flex; justify-content: space-between; align-items: center; position: absolute; top: 0; left: 0; right: 0; z-index: 1070;">
+                                <h5 class="modal-title" id="processBrowseModalLabel" style="font-weight: 700; font-size: 1.2rem; margin: 0; padding: 1rem;">{{ task.title }} - 实现过程浏览</h5>
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                                    <span id="step-indicator" style="font-size: 1rem;">步骤 1 / 0</span>
+                                    <button type="button" class="close" onclick="closeProcessBrowseModal()" aria-label="Close" style="color: white; opacity: 1; background: none; border: none; font-size: 1.5rem; cursor: pointer;">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="modal-body" style="padding: 0; margin-top: 60px; max-height: calc(90vh - 120px); overflow: hidden;">
+                                <div id="browse-container" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; min-height: 500px;">
+                                    <!-- 浏览内容将动态加载 -->
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="background-color: rgba(0, 0, 0, 0.8); color: white; position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
+                                <button id="prev-step" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                                    </svg>
+                                    上一步
+                                </button>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="play-pause" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                        <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                                        </svg>
+                                        <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;">
+                                            <path d="M5.5 3.5A1.5 1.5 0 0 1 7 2h2a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5v-9zM7 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-9A.5.5 0 0 0 9 4H7zm3 0a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-9A.5.5 0 0 1 7 4h2a.5.5 0 0 1 .5.5zm-6.5.5A1.5 1.5 0 0 1 4 4H2a1.5 1.5 0 0 1-1.5 1.5v5A1.5 1.5 0 0 1 2 12h2a1.5 1.5 0 0 1 1.5-1.5V5.5zM2 5a.5.5 0 0 0-.5.5v5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-5A.5.5 0 0 0 4 5H2zm12 0a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-2a1.5 1.5 0 0 1-1.5-1.5V5.5A1.5 1.5 0 0 1 14 4h2a1.5 1.5 0 0 1 1.5 1.5zM14 5a.5.5 0 0 0-.5.5v5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-2z"/>
+                                        </svg>
+                                        自动播放
+                                    </button>
+                                </div>
+                                <button id="next-step" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                    下一步
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8.5 16a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L8 2.707V15.5a.5.5 0 0 0 .5.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            <p class="task-description-full">{{ task.description }}</p>
+                        </div>
+
+                        <!-- 进度条 -->
+                        <div class="task-progress-large">
+                            <div class="progress-label">
+                                <span>完成进度</span>
+                                <span>{{ task.progress }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" 
+                         style="width: {{ task.progress }}%; 
+                                background-color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                <!-- 实现过程编辑模态框 -->
+                <div id="editProcessModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editProcessModalLabel" aria-hidden="true" style="display: none; position: fixed; top: 0; left: 0; z-index: 1050; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto;">
+                    <div class="modal-dialog" role="document" style="max-width: 80%; width: 80%; margin: 1.75rem auto; max-height: 90vh; position: relative; z-index: 1060;">
+                        <div class="modal-content" style="border-radius: var(--border-radius); box-shadow: var(--shadow-lg); border: none; overflow: hidden; background-color: var(--white);">
+                            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-blue) 100%); padding: 1.5rem 2rem; color: var(--white);">
+                                <h5 class="modal-title" id="editProcessModalLabel" style="font-weight: 700; font-size: 1.35rem; margin: 0;">编辑实现过程</h5>
+                                <button type="button" class="close" onclick="closeEditProcessModal()" aria-label="Close" style="color: var(--white); opacity: 1; transition: opacity 0.2s; background: rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: -5px; margin-right: -5px;">
+                                    <span aria-hidden="true" style="font-size: 1rem;">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" style="max-height: calc(90vh - 130px); overflow-y: auto; padding: 2rem; background-color: var(--white);">
+                <style>
+                    /* 现代编辑实现过程样式 */
+                    :root {
+                        --modal-bg: #ffffff;
+                        --input-border: #e2e8f0;
+                        --input-focus: var(--primary-color);
+                        --input-focus-shadow: rgba(132, 58, 114, 0.1);
+                        --card-bg: #f8f9ff;
+                        --card-border: #e9ecef;
+                    }
+                    
+                    /* 步骤图片上传项样式 */
+                    .step-image-upload-item {
+                        background: var(--card-bg);
+                        border: 2px solid var(--card-border);
+                        border-radius: var(--border-radius);
+                        padding: 1.5rem;
+                        margin-bottom: 1.5rem;
+                        transition: var(--transition);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .step-image-upload-item:hover {
+                        border-color: var(--input-focus);
+                        box-shadow: 0 4px 12px var(--input-focus-shadow);
+                        transform: translateY(-2px);
+                    }
+                    
+                    /* 表单元素样式 */
+                    .form-group label {
+                        font-weight: 600;
+                        margin-bottom: 0.75rem;
+                        display: block;
+                        font-size: 1rem;
+                        color: var(--text-color);
+                    }
+                    
+                    .form-control {
+                        width: 100%;
+                        padding: 0.875rem 1rem;
+                        border: 2px solid var(--input-border);
+                        border-radius: var(--border-radius-sm);
+                        font-size: 1rem;
+                        transition: var(--transition);
+                        background-color: var(--white);
+                    }
+                    
+                    .form-control:focus {
+                        border-color: var(--input-focus);
+                        box-shadow: 0 0 0 3px var(--input-focus-shadow);
+                        outline: none;
+                    }
+                    
+                    /* 文本域样式 */
+                    #processContent {
+                        resize: vertical;
+                        min-height: 200px;
+                        font-family: inherit;
+                        line-height: 1.6;
+                    }
+                    
+                    /* 文件上传样式 */
+                    input[type="file"] {
+                        cursor: pointer;
+                        background-color: var(--white);
+                    }
+                    
+                    /* 滚动条样式 */
+                    .modal-body::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    
+                    .modal-body::-webkit-scrollbar-track {
+                        background: #f1f1f1;
+                        border-radius: 3px;
+                    }
+                    
+                    .modal-body::-webkit-scrollbar-thumb {
+                        background: #c1c1c1;
+                        border-radius: 3px;
+                    }
+                    
+                    .modal-body::-webkit-scrollbar-thumb:hover {
+                        background: var(--primary-color);
+                    }
+                    
+                    /* 模态框过渡动画 */
+                    .modal {
+                        opacity: 0;
+                        visibility: hidden;
+                        transition: opacity 0.3s ease;
+                    }
+                    
+                    .modal.show {
+                        opacity: 1;
+                        visibility: visible;
+                        display: block !important;
+                    }
+                    
+                    .modal-dialog {
+                        transition: transform 0.3s ease;
+                        transform: translate(0, -20px);
+                    }
+                    
+                    .modal.show .modal-dialog {
+                        transform: translate(0, 0);
+                    }
+                    
+                    /* 确保模态框内容可点击 */
+                    .modal-content {
+                        position: relative;
+                        z-index: 1070;
+                    }
+                    
+                    /* 响应式调整 */
+                    @media (max-width: 768px) {
+                        .modal-dialog {
+                            max-width: 95% !important;
+                            width: 95% !important;
+                        }
+                    }
+                </style>
+                                <form id="editProcessForm">
+                                    {% csrf_token %}
+                                    <div class="form-group mb-6">
+                                        <label for="processContent">实现过程内容（每行一个步骤）</label>
+                                        <textarea id="processContent" name="process" class="form-control" placeholder="请输入实现过程，每行表示一个步骤">{{ task.process }}</textarea>
+                                    </div>
+                                    <!-- 步骤图片上传区域 - 重构版 -->
+                                    <div class="mb-6">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">步骤图片上传</h3>
+                                            <span style="font-size: 0.85rem; color: var(--text-secondary);">选择步骤并上传对应图片</span>
+                                        </div>
+                                        
+                                        <div style="background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 1.5rem; border: 1px solid var(--border-color);">
+                                            <div class="row gap-4">
+                                                <div class="col-md-6">
+                                                    <div style="margin-bottom: 1.25rem;">
+                                                        <label for="step-select" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                                            选择步骤 <span style="color: #dc3545;">*</span>
+                                                        </label>
+                                                        <select id="step-select" name="step_number" 
+                                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); 
+                                                                       border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition);">
+                                                            <!-- 步骤选项将动态生成 -->
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div style="margin-bottom: 1.25rem;">
+                                                        <label for="step-image-upload" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                                            上传图片 <span style="color: #dc3545;">*</span>
+                                                        </label>
+                                                        <div style="position: relative;">
+                                                            <input type="file" id="step-image-upload" name="step_image" accept="image/*" multiple
+                                                                    style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                                                                         padding: 2rem; border: 2px dashed var(--border-color); border-radius: var(--radius-md);
+                                                                         background-color: var(--bg-color); transition: var(--transition);">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="var(--text-secondary)" viewBox="0 0 16 16">
+                                                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                                                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                                                                </svg>
+                                                                <p style="margin: 0.75rem 0 0; font-size: 0.95rem; color: var(--text-secondary); text-align: center;">
+                                                                    拖放文件到此处或<span style="color: var(--primary-color); font-weight: 500;">点击选择</span>
+                                                                </p>
+                                                                <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                                                    支持 JPG, PNG, GIF 格式，最大 5MB
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <div style="margin-bottom: 1.25rem;">
+                                                        <label for="step-description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                                            图片描述
+                                                        </label>
+                                                        <input type="text" id="step-description" name="step_description" placeholder="输入图片描述（可选）" 
+                                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); 
+                                                                       border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition);">
+                                                    </div>
+                                                    
+                                                    <div style="margin-bottom: 1.25rem;">
+                                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                                                            上传说明
+                                                        </label>
+                                                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                                            <li style="margin-bottom: 0.5rem;">每个步骤最多上传一张图片</li>
+                                                            <li style="margin-bottom: 0.5rem;">上传新图片会替换原有图片</li>
+                                                            <li>点击保存后图片才会实际更新</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div style="margin-top: 1.5rem; text-align: center;">
+                                                <button id="upload-step-image" type="button" 
+                                                        style="padding: 0.875rem 2rem; font-size: 1rem; font-weight: 600; 
+                                                               background-color: var(--primary-color); color: white; border: none; 
+                                                               border-radius: var(--radius-md); cursor: pointer; transition: var(--transition);">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 0.5rem; vertical-align: middle;">
+                                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                                    </svg>
+                                                    准备上传图片
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 已上传图片显示区域 -->
+                                    <div class="mb-6">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">已上传的步骤图片</h3>
+                                            <span id="uploaded-count" style="font-size: 0.85rem; color: var(--text-secondary);">
+                                                <!-- 计数将动态更新 -->
+                                            </span>
+                                        </div>
+                                        
+                                        <div style="background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); 
+                                                     padding: 1.5rem; border: 1px solid var(--border-color);">
+                                            <div id="uploaded-step-images" class="row gap-4">
+                                                <!-- 已上传图片将动态生成 -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="padding: 1.5rem 2rem; background-color: var(--light-color); border-top: 1px solid var(--card-border); display: flex; gap: 1rem; justify-content: flex-end;">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditProcessModal()" style="padding: 0.875rem 1.75rem; font-size: 1rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition);">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="saveProcessChanges()" style="padding: 0.875rem 1.75rem; font-size: 1rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition); position: relative; overflow: hidden;">
+                                    <span>保存修改</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 实现过程 -->
+                    <div class="task-section" id="process-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.75rem;">
+                        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">实现过程</h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="edit-process-button" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175l-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                                </svg>
+                                编辑
+                            </button>
+                            <button id="browse-process-button" class="btn btn-secondary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                浏览
+                            </button>
+                        </div>
+                    </div>
+                        <div class="process-content">
+                            {% if task.process %}
+                                {% for step in task.process|lines %}
+                                    {% if step.strip %}
+                                    <div class="process-step">
+                                        <div class="step-number">{{ forloop.counter }}</div>
+                                        <div class="step-content">
+                                            <div class="step-text">
+                                                {{ step.strip|render_with_images:project.id|safe }}
+                                            </div>
+                                            <div class="step-image" data-step="{{ forloop.counter }}">
+                                                <!-- 步骤图片将通过JavaScript动态加载 -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-process">暂无实现过程信息</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 移除全屏功能容器 -->
+
+
+                </div>
+
+                <!-- 右侧边栏 -->
+                <div class="task-detail-sidebar">
+                    <!-- 项目信息 -->
+                    <div class="sidebar-section">
+                        <h3>项目信息</h3>
+                        <div class="info-item">
+                            <span class="info-label">所属项目：</span>
+                            <span class="info-value"><a href="{% url 'project_detail' project_id=project.id %}">{{ project.name }}</a></span>
+                        </div>
+                    </div>
+
+                    <!-- 任务信息 -->
+                    <div class="sidebar-section">
+                        <h3>任务信息</h3>
+                        <div class="info-item">
+                            <span class="info-label">任务编号：</span>
+                            <span class="info-value">{{ task.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">任务分类：</span>
+                            <span class="info-value" 
+                                  style="color: {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'color' }}{% else %}{{ task_categories.RD.color }}{% endif %};">
+                                {% if task.category in task_categories %}{{ task_categories|get:task.category|get:'name' }}{% else %}{{ task_categories.RD.name }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Workshop：</span>
+                            <span class="info-value">第{% if task.workshop == 1 %}一{% elif task.workshop == 2 %}二{% elif task.workshop == 3 %}三{% elif task.workshop == 4 %}四{% elif task.workshop == 5 %}五{% endif %}次</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">完成状态：</span>
+                            <span class="info-value">
+                                {% if task.progress == 100 %}
+                                <span class="status-completed">已完成</span>
+                                {% elif task.progress > 0 %}
+                                <span class="status-in-progress">进行中</span>
+                                {% else %}
+                                <span class="status-not-started">未开始</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 相关任务 -->
+                    <div class="sidebar-section">
+                        <h3>相关任务</h3>
+                        {% if related_tasks %}
+                        <div class="related-tasks">
+                            {% for related_task in related_tasks %}
+                            <a href="{% url 'task_detail' project_id=project.id task_id=related_task.id %}" class="related-task-item">
+                                <h4>{{ related_task.title }}</h4>
+                                <span class="related-task-workshop">第{% if related_task.workshop == 1 %}一{% elif related_task.workshop == 2 %}二{% elif related_task.workshop == 3 %}三{% elif related_task.workshop == 4 %}四{% elif related_task.workshop == 5 %}五{% endif %}次workshop</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="no-related-tasks">暂无相关任务</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="sidebar-section">
+                        <div class="action-buttons">
+                            <a href="{% url 'edit_task' project_id=project.id task_id=task.id %}" class="btn btn-secondary">
+                                修改任务
+                            </a>
+                            <button class="btn btn-danger" onclick="document.getElementById('deleteModal').classList.add('show')">
+                                删除任务
+                            </button>
+                            <a href="{% url 'task_list' %}" class="btn btn-secondary">
+                                返回任务列表
+                            </a>
+                            <a href="{% url 'add_task' project_id=project.id %}" class="btn btn-primary">
+                                新增相似任务
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 删除确认模态框 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    确定要删除任务"{{ task.title }}"吗？此操作无法撤销。
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <form action="{% url 'delete_task' project_id=project.id task_id=task.id %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">删除</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Starting JavaScript execution...');
+        // 模态框控制
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded, starting to process scripts...');
+            const modal = document.getElementById('deleteModal');
+            
+            // 打开模态框
+            const deleteButtons = document.querySelectorAll('.btn-danger');
+            deleteButtons.forEach(button => {
+                if (button.textContent.trim() === '删除任务') {
+                    button.addEventListener('click', function() {
+                        modal.classList.add('show');
+                        document.body.style.overflow = 'hidden'; // 防止背景滚动
+                    });
+                }
+            });
+            
+            // 关闭模态框
+            function closeModal() {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            
+            // 关闭按钮
+            const closeBtn = modal.querySelector('.close');
+            closeBtn.addEventListener('click', closeModal);
+            
+            // 取消按钮
+            const cancelBtn = modal.querySelector('.btn-secondary');
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // 点击模态框外部关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // 处理实现过程中的图片标记
+            function processImageTags() {
+                const processSteps = document.querySelectorAll('.step-content');
+                
+                processSteps.forEach(step => {
+                    let content = step.innerHTML;
+                    
+                    // 更强大的正则表达式，处理各种可能的图片标记格式
+                    const imageTagRegex = /\[IMAGE:([^\[\]]+)\]/g;
+                    let hasImages = false;
+                    
+                    // 替换图片标记为实际图片
+                    const newContent = content.replace(imageTagRegex, function(match, filename) {
+                        hasImages = true;
+                        // 清理文件名，移除多余的字符
+                        const cleanFilename = filename.trim().replace(/[\[\]]/g, '');
+                        // 创建图片HTML
+                        return `<div class="task-image-container"><img src="/media/task_step_images/${cleanFilename}" alt="实现过程图片" class="task-image"></div>`;
+                    });
+                    
+                    // 如果有图片，更新内容
+                    if (hasImages) {
+                        step.innerHTML = newContent;
+                    }
+                });
+            }
+            
+            // 全屏功能实现
+            // 移除全屏功能
+            // setupFullscreenFunctionality() 已移除
+            
+            // 实现过程编辑功能
+            function setupProcessEditFunctionality() {
+                const editProcessButton = document.getElementById('edit-process-button');
+                const editProcessModal = document.getElementById('editProcessModal');
+                const editProcessForm = document.getElementById('editProcessForm');
+                const processContent = document.getElementById('processContent');
+                const stepImagesContainer = document.getElementById('step-images-container');
+                const addStepImageButton = document.getElementById('add-step-image');
+                
+                // 初始化步骤选择下拉框
+                function populateStepSelect() {
+                    const stepSelect = document.getElementById('step-select');
+                    const processText = processContent.value.trim();
+                    const processLines = processText.split('\n').filter(line => line.trim());
+                    
+                    // 清空现有选项
+                    stepSelect.innerHTML = '';
+                    
+                    // 添加步骤选项
+                    processLines.forEach((line, index) => {
+                        const stepNumber = index + 1;
+                        const option = document.createElement('option');
+                        option.value = stepNumber;
+                        option.textContent = `步骤 ${stepNumber}`;
+                        stepSelect.appendChild(option);
+                    });
+                    
+                    // 如果没有步骤，至少添加一个
+                    if (processLines.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '1';
+                        option.textContent = '步骤 1';
+                        stepSelect.appendChild(option);
+                    }
+                }
+                
+                // 更新已上传图片计数
+                function updateUploadedCount() {
+                    const container = document.getElementById('uploaded-step-images');
+                    const imageCount = container.querySelectorAll('.step-image-card').length;
+                    const countElement = document.getElementById('uploaded-count');
+                    
+                    if (countElement) {
+                        countElement.textContent = `共 ${imageCount} 张图片`;
+                    }
+                    
+                    // 如果没有图片，显示空状态
+                    if (imageCount === 0) {
+                        const emptyState = document.createElement('div');
+                        emptyState.className = 'text-center py-8';
+                        emptyState.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="var(--text-secondary)" viewBox="0 0 16 16" style="margin-bottom: 1rem;">
+                                <path d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 13a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
+                                <path d="M7.5 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 .5-.5z"/>
+                            </svg>
+                            <h4 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--text-primary);">暂无步骤图片</h4>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">使用上方上传区域为步骤添加图片说明</p>
+                        `;
+                        
+                        // 确保只添加一个空状态
+                        const existingEmptyState = container.querySelector('.py-8');
+                        if (!existingEmptyState) {
+                            container.appendChild(emptyState);
+                        }
+                    } else {
+                        // 移除空状态
+                        const emptyState = container.querySelector('.py-8');
+                        if (emptyState) {
+                            emptyState.remove();
+                        }
+                    }
+                }
+                
+                // 创建步骤图片卡片
+                function createStepImageCard(stepNumber, imageSrc, fileName, description, imageId = null) {
+                    const card = document.createElement('div');
+                    card.className = 'step-image-card';
+                    card.setAttribute('data-filename', fileName);
+                    card.style = `
+                        background: var(--card-bg);
+                        border: 1px solid var(--border-color);
+                        border-radius: var(--radius-md);
+                        box-shadow: var(--shadow-sm);
+                        overflow: hidden;
+                        transition: var(--transition);
+                    `;
+                    
+                    // 构建卡片内容
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1rem 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; align-items: center;">
+                                <span style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    width: 28px;
+                                    height: 28px;
+                                    margin-right: 0.75rem;
+                                    background-color: var(--primary-color);
+                                    color: white;
+                                    font-weight: 600;
+                                    border-radius: 50%;
+                                    font-size: 0.9rem;
+                                ">${stepNumber}</span>
+                                <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">
+                                    步骤 ${stepNumber} 图片
+                                </h4>
+                            </div>
+                            <button type="button" class="delete-uploaded-image" data-step="${stepNumber}" data-image-id="${imageId}" style="
+                                background: none;
+                                border: none;
+                                color: var(--text-secondary);
+                                font-size: 1.25rem;
+                                cursor: pointer;
+                                padding: 0.25rem;
+                                border-radius: var(--radius-sm);
+                                transition: var(--transition);
+                            ">
+                                ×
+                            </button>
+                        </div>
+                        <div style="padding: 1rem;">
+                            <div style="
+                                position: relative;
+                                width: 100%;
+                                padding-top: 75%;
+                                margin-bottom: 1rem;
+                                background-color: var(--bg-color);
+                                border-radius: var(--radius-sm);
+                                overflow: hidden;
+                            ">
+                                <img src="${imageSrc}" alt="步骤 ${stepNumber} 图片" style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: contain;
+                                ">
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">文件名</p>
+                                <p style="margin: 0.25rem 0 0; font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">
+                                    ${fileName}
+                                </p>
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">描述</p>
+                                <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: var(--text-primary);">
+                                    ${description || '无描述'}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 悬停效果
+                    card.addEventListener('mouseenter', function() {
+                        card.style.transform = 'translateY(-2px)';
+                        card.style.boxShadow = 'var(--shadow-md)';
+                        const deleteBtn = card.querySelector('.delete-uploaded-image');
+                        deleteBtn.style.color = '#dc3545';
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        card.style.transform = 'translateY(0)';
+                        card.style.boxShadow = 'var(--shadow-sm)';
+                        const deleteBtn = card.querySelector('.delete-uploaded-image');
+                        deleteBtn.style.color = 'var(--text-secondary)';
+                    });
+                    
+                    return card;
+                }
+                
+                // 显示已上传的步骤图片
+                function displayUploadedStepImages() {
+                    const uploadedImagesContainer = document.getElementById('uploaded-step-images');
+                    const stepImagesData = {% if task.step_images %}{{ task.step_images|safe }}{% else %}[]{% endif %};
+                    
+                    // 清空容器
+                    uploadedImagesContainer.innerHTML = '';
+                    
+                    if (stepImagesData && stepImagesData.length > 0) {
+                        // 过滤掉已标记为删除的图片
+                        const filteredImages = stepImagesData.filter(imageData => {
+                            // 构建图片标识键，格式为"步骤_图片ID"
+                            const imageKey = `${imageData.step}_${imageData.id || '0'}`;
+                            return !window.imagesToDelete || !window.imagesToDelete.has(imageKey);
+                        });
+                        
+                        filteredImages.forEach(imageData => {
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'col-12 col-sm-6 col-lg-4';
+                            
+                            // 从URL中提取文件名
+                            let imageUrl = imageData.url || '';
+                            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/') && imageUrl.length > 0) {
+                                imageUrl = '/' + imageUrl;
+                            }
+                            const fileName = imageUrl ? imageUrl.substring(imageUrl.lastIndexOf('/') + 1) : 'unknown.png';
+                            
+                            const card = createStepImageCard(
+                                imageData.step, 
+                                imageUrl, 
+                                fileName, 
+                                imageData.description
+                            );
+                            
+                            imageContainer.appendChild(card);
+                            uploadedImagesContainer.appendChild(imageContainer);
+                        });
+                        
+                        // 添加删除事件监听
+                        document.querySelectorAll('.delete-uploaded-image').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const stepNumber = this.getAttribute('data-step');
+                                const imageId = this.getAttribute('data-image-id') || '0';
+                                const filename = this.closest('.step-image-card')?.getAttribute('data-filename');
+                                deleteStepImage(stepNumber, imageId, filename);
+                            });
+                        });
+                    }
+                    
+                    // 更新计数和空状态
+                    updateUploadedCount();
+                }
+                
+                // 删除步骤图片
+                function deleteStepImage(stepNumber, imageId, filename = null) {
+                    // 确保imagesToDelete正确初始化
+                    if (!window.imagesToDelete) {
+                        window.imagesToDelete = new Set();
+                    }
+                    
+                    // 优化的删除标识构建 - 同时添加两种格式以确保后端能匹配
+                    let deleteKey;
+                    if (filename && filename !== 'null' && filename !== 'undefined') {
+                        deleteKey = `${stepNumber}_${filename}`;
+                        // 添加文件名作为备用匹配项
+                        window.imagesToDelete.add(filename);
+                    } else {
+                        deleteKey = `${stepNumber}_${imageId}`;
+                    }
+                    
+                    window.imagesToDelete.add(deleteKey);
+                    console.log(`已添加删除标识: ${deleteKey}`);
+                    console.log(`当前删除列表:`, Array.from(window.imagesToDelete));
+                    
+                    // 安全地移除对应的卡片
+                    try {
+                        const deleteButtons = document.querySelectorAll(`.delete-uploaded-image[data-step="${stepNumber}"][data-image-id="${imageId}"]`);
+                        if (deleteButtons.length > 0) {
+                            const cardContainer = deleteButtons[0].closest('.col-12, .col-sm-6, .col-lg-4');
+                            if (cardContainer) {
+                                cardContainer.remove();
+                            }
+                        }
+                    } catch (e) {
+                        console.error('移除卡片时出错:', e);
+                    }
+                    
+                    // 更新计数和空状态
+                    updateUploadedCount();
+                    
+                    // 显示删除提示
+                    showMessage(`已标记图片为删除，保存后生效`, 'info');
+                }
+                
+                // 设置图片上传功能
+                function setupImageUpload() {
+                    const uploadButton = document.getElementById('upload-step-image');
+                    const fileInput = document.getElementById('step-image-upload');
+                    
+                    // 添加选择文件后的反馈功能
+                    fileInput.addEventListener('change', function() {
+                        if (this.files && this.files.length > 0) {
+                            const fileName = this.files[0].name;
+                            let feedbackEl = document.getElementById('file-name-feedback');
+                            
+                            if (!feedbackEl) {
+                                feedbackEl = document.createElement('div');
+                                feedbackEl.id = 'file-name-feedback';
+                                feedbackEl.style.marginTop = '8px';
+                                feedbackEl.style.padding = '8px';
+                                feedbackEl.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                                feedbackEl.style.borderRadius = 'var(--radius-md)';
+                                feedbackEl.style.fontSize = '0.9rem';
+                                feedbackEl.style.color = 'var(--text-secondary)';
+                                feedbackEl.style.display = 'flex';
+                                feedbackEl.style.alignItems = 'center';
+                                
+                                // 添加文件图标
+                                const fileIcon = document.createElement('span');
+                                fileIcon.textContent = '📄 ';
+                                feedbackEl.appendChild(fileIcon);
+                                
+                                // 添加文件名文本
+                                const fileNameText = document.createElement('span');
+                                fileNameText.id = 'selected-file-name';
+                                feedbackEl.appendChild(fileNameText);
+                                
+                                // 插入到文件输入框后面
+                                this.parentNode.insertBefore(feedbackEl, this.nextSibling.nextSibling);
+                            }
+                            
+                            document.getElementById('selected-file-name').textContent = fileName;
+                        } else {
+                            // 如果没有选择文件，移除反馈元素
+                            const feedbackEl = document.getElementById('file-name-feedback');
+                            if (feedbackEl) {
+                                feedbackEl.remove();
+                            }
+                        }
+                    });
+                    
+                    uploadButton.addEventListener('click', function() {
+                        const descriptionInput = document.getElementById('step-description');
+                        const stepSelect = document.getElementById('step-select');
+                        
+                        if (!stepSelect.value) {
+                            showMessage('请选择步骤', 'error');
+                            return;
+                        }
+                        
+                        if (!fileInput.files || fileInput.files.length === 0) {
+                            showMessage('请选择要上传的图片', 'error');
+                            return;
+                        }
+                        
+                        const stepNumber = stepSelect.value;
+                        const file = fileInput.files[0];
+                        const description = descriptionInput.value || '无描述';
+                        
+                        // 检查该步骤的图片数量，确保不超过3张
+                        const existingImages = document.querySelectorAll(`.step-image-card[data-step="${stepNumber}"]`);
+                        if (existingImages.length >= 3) {
+                            showMessage('每个步骤最多只能上传3张图片', 'error');
+                            return;
+                        }
+                        
+                        // 创建图片预览
+                        const imageContainer = document.createElement('div');
+                        imageContainer.className = 'col-12 col-sm-6 col-lg-4';
+                        
+                        // 首先创建一个加载中的占位符
+                        imageContainer.innerHTML = `
+                            <div style="
+                                background: var(--card-bg);
+                                border: 1px solid var(--border-color);
+                                border-radius: var(--radius-md);
+                                box-shadow: var(--shadow-sm);
+                                overflow: hidden;
+                                padding: 1rem;
+                                text-align: center;
+                            ">
+                                <div class="spinner-border" role="status" style="margin-bottom: 0.75rem;">
+                                    <span class="sr-only">加载中...</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                    正在处理图片...
+                                </p>
+                            </div>
+                        `;
+                        
+                        // 添加到容器
+                        const container = document.getElementById('uploaded-step-images');
+                        container.appendChild(imageContainer);
+                        updateUploadedCount();
+                        
+                        // 读取图片文件并创建预览
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 移除加载占位符
+                            imageContainer.innerHTML = '';
+                            
+                            // 为每个图片生成唯一ID
+                            const imageId = Date.now();
+                        
+                        // 创建并添加图片卡片
+                        const card = createStepImageCard(stepNumber, e.target.result, file.name, description, imageId);
+                        // 存储文件信息到卡片元素，方便保存时处理
+                        card.setAttribute('data-step', stepNumber);
+                        card.setAttribute('data-image-id', imageId);
+                        card.setAttribute('data-filename', file.name);
+                        card.setAttribute('data-description', description);
+                        imageContainer.appendChild(card);
+                        
+                        // 将图片信息添加到待上传队列
+                        window.pendingUploads.push({
+                            step: stepNumber,
+                            file: file,
+                            description: description,
+                            imageId: imageId
+                        });
+                        
+                        // 添加删除事件监听
+                        const deleteBtn = card.querySelector('.delete-uploaded-image');
+                        deleteBtn.addEventListener('click', function() {
+                            const btnStepNumber = this.getAttribute('data-step');
+                            const btnImageId = this.getAttribute('data-image-id');
+                            deleteStepImage(btnStepNumber, btnImageId);
+                        });
+                        };
+                        reader.readAsDataURL(file);
+                        
+                        // 清除表单
+                        fileInput.value = '';
+                        descriptionInput.value = '';
+                        
+                        // 重置上传区域样式
+                        const uploadArea = fileInput.nextElementSibling;
+                        if (uploadArea) {
+                            uploadArea.style.borderColor = 'var(--border-color)';
+                            uploadArea.style.backgroundColor = 'var(--bg-color)';
+                        }
+                        
+                        showMessage('图片已添加到上传队列', 'success');
+                    });
+                    
+                    // 文件拖放效果
+                    const uploadArea = fileInput.nextElementSibling;
+                    
+                    if (uploadArea) {
+                        uploadArea.addEventListener('dragover', function(e) {
+                            e.preventDefault();
+                            uploadArea.style.borderColor = 'var(--primary-color)';
+                            uploadArea.style.backgroundColor = 'rgba(52, 152, 219, 0.05)';
+                        });
+                        
+                        uploadArea.addEventListener('dragleave', function() {
+                            uploadArea.style.borderColor = 'var(--border-color)';
+                            uploadArea.style.backgroundColor = 'var(--bg-color)';
+                        });
+                        
+                        uploadArea.addEventListener('drop', function(e) {
+                            e.preventDefault();
+                            uploadArea.style.borderColor = 'var(--border-color)';
+                            uploadArea.style.backgroundColor = 'var(--bg-color)';
+                            
+                            if (e.dataTransfer.files.length > 0) {
+                                fileInput.files = e.dataTransfer.files;
+                            }
+                        });
+                    }
+                }
+                
+                // 监听步骤内容变化，更新步骤选择下拉框
+                processContent.addEventListener('input', populateStepSelect);
+                
+                // 打开编辑模态框
+                function openEditProcessModal() {
+                    // 初始化删除图片列表
+                    window.imagesToDelete = new Set();
+                    // 初始化待上传图片队列
+                    window.pendingUploads = [];
+                    
+                    // 从页面获取当前实现过程内容
+                    const processSteps = document.querySelectorAll('.process-step');
+                    let currentProcess = '';
+                    
+                    processSteps.forEach((step) => {
+                        const stepText = step.querySelector('.step-text').textContent.trim();
+                        // 移除步骤编号前缀
+                        const cleanedText = stepText.replace(/^\d+\.\s*/, '');
+                        currentProcess += `${cleanedText}\n`;
+                    });
+                    
+                    processContent.value = currentProcess.trim();
+                    
+                    // 填充步骤选择下拉框
+                    populateStepSelect();
+                    
+                    // 显示已上传的步骤图片
+                    displayUploadedStepImages();
+                    
+                    // 初始化图片上传功能
+                    setupImageUpload();
+                    
+                    // 调试信息
+                    console.log('步骤图片数据:', {% if task.step_images %}{{ task.step_images|safe }}{% else %}[]{% endif %});
+                    
+                    // 移除任何现有的遮罩
+                    const existingBackdrop = document.getElementById('modal-backdrop');
+                    if (existingBackdrop) {
+                        existingBackdrop.remove();
+                    }
+                    
+                    // 添加背景遮罩（z-index略低于模态框）
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    backdrop.style.position = 'fixed';
+                    backdrop.style.top = 0;
+                    backdrop.style.left = 0;
+                    backdrop.style.zIndex = 1045;
+                    backdrop.style.width = '100vw';
+                    backdrop.style.height = '100vh';
+                    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    backdrop.id = 'modal-backdrop';
+                    document.body.appendChild(backdrop);
+                    
+                    // 显示模态框（确保z-index正确）
+                    editProcessModal.classList.add('show');
+                    editProcessModal.style.zIndex = 1050;
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                // 关闭编辑模态框
+                function closeEditProcessModal() {
+                    editProcessModal.classList.remove('show');
+                    document.body.style.overflow = '';
+                    
+                    // 移除背景遮罩
+                    const backdrop = document.getElementById('modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+                
+                // 保存实现过程修改
+
+                // 处理成功的函数 - 定义在外部以避免作用域问题
+                function handleProcessSaveSuccess() {
+                    showMessage('保存成功', 'success');
+                    
+                    // 重置状态
+                    try {
+                        if (Array.isArray(window.pendingUploads)) {
+                            window.pendingUploads = [];
+                        }
+                        if (window.imagesToDelete && typeof window.imagesToDelete.clear === 'function') {
+                            window.imagesToDelete.clear();
+                        }
+                    } catch (e) {
+                        console.error('重置状态失败:', e);
+                    }
+                    
+                    // 延迟后刷新页面
+                    setTimeout(() => {
+                        try {
+                            closeEditProcessModal();
+                            location.reload();
+                        } catch (e) {
+                            console.error('刷新页面失败:', e);
+                        }
+                    }, 1000);
+                }
+                
+                async function saveProcessChanges() {
+                    // 1. 确保window全局变量存在并初始化 - 移到函数开始处
+                    if (!window.pendingUploads) {
+                        window.pendingUploads = [];
+                        console.warn('pendingUploads未定义，已初始化为空数组');
+                    }
+                    if (!window.imagesToDelete) {
+                        window.imagesToDelete = new Set();
+                        console.warn('imagesToDelete未定义，已初始化为空Set');
+                    }
+                    
+                    // 防御性检查：确保必要元素存在
+                    if (!processContent) {
+                        console.error('processContent元素未找到');
+                        showMessage('页面元素加载失败，请刷新重试', 'error');
+                        return;
+                    }
+                    
+                    const processValue = processContent.value.trim();
+                    
+                    if (!processValue) {
+                        showMessage('实现过程不能为空', 'error');
+                        return;
+                    }
+                    
+                    // 获取保存按钮并定义变量，确保在整个函数作用域可用
+                    const saveButton = document.querySelector('[onclick="saveProcessChanges()"]');
+                    if (!saveButton) {
+                        console.error('找不到保存按钮');
+                        showMessage('操作失败，请刷新页面重试', 'error');
+                        return;
+                    }
+                    
+                    const originalText = saveButton.innerHTML;
+                    
+                    // 定义重置按钮状态的函数
+                    function resetButton() {
+                        try {
+                            saveButton.disabled = false;
+                            saveButton.innerHTML = originalText;
+                        } catch (e) {
+                            console.error('重置按钮状态失败:', e);
+                        }
+                    }
+                    
+                    // 构建FormData
+                    const formData = new FormData();
+                    
+                    // 安全地获取CSRF token
+                    const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (!csrfTokenElement) {
+                        console.error('CSRF token元素未找到');
+                        showMessage('安全验证失败，请刷新页面重试', 'error');
+                        return;
+                    }
+                    formData.append('csrfmiddlewaretoken', csrfTokenElement.value);
+                    formData.append('process', processValue);
+                    
+                    // ===== 修复1: 正确处理待上传的图片 =====
+                    console.log('待上传图片队列:', window.pendingUploads);
+                    
+                    if (Array.isArray(window.pendingUploads) && window.pendingUploads.length > 0) {
+                        // 按步骤分组，为每个步骤内的图片分配唯一索引
+                        const stepFilesMap = {};
+                        
+                        window.pendingUploads.forEach((pending, index) => {
+                            console.log(`添加待上传图片 ${index + 1}:`, {
+                                step: pending.step,
+                                fileName: pending.file.name,
+                                fileSize: pending.file.size
+                            });
+                            
+                            // 为每个步骤的文件创建计数器
+                            if (!stepFilesMap[pending.step]) {
+                                stepFilesMap[pending.step] = 0;
+                            }
+                            
+                            // 获取当前步骤的文件索引
+                            const fileIndex = stepFilesMap[pending.step];
+                            stepFilesMap[pending.step]++;
+                            
+                            // 传递实际的 File 对象，使用唯一的键名
+                            formData.append(`step_image_${pending.step}_${fileIndex}`, pending.file);
+                            formData.append(`step_description_${pending.step}_${fileIndex}`, pending.description || '');
+                            
+                            console.log(`使用键名: step_image_${pending.step}_${fileIndex} 上传文件`);
+                        });
+                    }
+                    
+                    // 处理要删除的图片 - 加强健壮性
+                    if (window.imagesToDelete && window.imagesToDelete.size > 0) {
+                        console.log('待删除图片列表:', Array.from(window.imagesToDelete));
+                        
+                        // 确保每个删除键都被正确添加
+                        let addedCount = 0;
+                        window.imagesToDelete.forEach(imageKey => {
+                            if (imageKey && typeof imageKey === 'string') {
+                                formData.append('delete_step_image[]', imageKey);
+                                addedCount++;
+                            }
+                        });
+                        console.log(`成功添加 ${addedCount} 个删除键`);
+                    } else {
+                        console.log('没有需要删除的图片');
+                    }
+                    
+                    // 打印FormData内容用于调试
+                    console.log('=== FormData 内容 ===');
+                    for (let pair of formData.entries()) {
+                        if (pair[1] instanceof File) {
+                            console.log(pair[0], ':', '[File]', pair[1].name);
+                        } else {
+                            console.log(pair[0], ':', pair[1]);
+                        }
+                    }
+                    
+                    try {
+                        saveButton.innerHTML = '<span>保存中...</span>';
+                        saveButton.disabled = true;
+                        
+                        const response = await fetch('{% url "update_task_process" project_id=project.id task_id=task.id %}', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        });
+                        
+                        console.log('响应状态:', response.status);
+                        
+                        // 关键修改：只要HTTP状态码是200-299，就认为是成功
+                        if (response.status >= 200 && response.status < 300) {
+                            console.log('操作成功，状态码:', response.status);
+                            handleProcessSaveSuccess();
+                        } else {
+                            // 处理错误
+                            const errorText = await response.text();
+                            console.error('服务器返回错误:', errorText);
+                            showMessage('保存失败，请重试', 'error');
+                            resetButton();
+                        }
+                        
+                    } catch (error) {
+                        console.error('网络错误:', error);
+                        showMessage('网络错误，请检查连接', 'error');
+                        resetButton();
+                    }
+                }
+                
+                // 显示消息
+                function showMessage(text, type = 'success') {
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = `message message-${type}`;
+                    messageContainer.textContent = text;
+                    messageContainer.style.position = 'fixed';
+                    messageContainer.style.top = '20px';
+                    messageContainer.style.right = '20px';
+                    messageContainer.style.padding = '10px 20px';
+                    messageContainer.style.borderRadius = '4px';
+                    messageContainer.style.zIndex = '9999';
+                    messageContainer.style.color = 'white';
+                    
+                    // 设置不同类型消息的背景色
+                    if (type === 'success') {
+                        messageContainer.style.backgroundColor = '#28a745';
+                    } else if (type === 'error') {
+                        messageContainer.style.backgroundColor = '#dc3545';
+                    } else if (type === 'info') {
+                        messageContainer.style.backgroundColor = '#17a2b8';
+                    }
+                    
+                    messageContainer.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+                    
+                    document.body.appendChild(messageContainer);
+                    
+                    // 2秒后移除消息
+                    setTimeout(() => {
+                        messageContainer.remove();
+                    }, 2000);
+                }
+                
+                // 添加事件监听器
+                if (editProcessButton) {
+                    editProcessButton.addEventListener('click', openEditProcessModal);
+                }
+                
+                // 暴露函数到全局作用域
+            window.closeEditProcessModal = closeEditProcessModal;
+            window.saveProcessChanges = saveProcessChanges;
+            window.loadStepImages = loadStepImages;
+            }
+            
+            // 加载步骤图片 - 增强版，显示缩略图
+            function loadStepImages() {
+                // 从task对象获取步骤图片数据
+                const stepImages = {% if task.step_images %}{{ task.step_images|safe }}{% else %}[]{% endif %};
+                console.log('步骤图片数据:', stepImages);
+                
+                // 按步骤分组图片
+                const imagesByStep = {};
+                if (stepImages && Array.isArray(stepImages) && stepImages.length > 0) {
+                    stepImages.forEach(imageData => {
+                        // 确保step字段是数字类型
+                        const stepNum = parseInt(imageData.step, 10);
+                        if (!isNaN(stepNum)) {
+                            if (!imagesByStep[stepNum]) {
+                                imagesByStep[stepNum] = [];
+                            }
+                            imagesByStep[stepNum].push(imageData);
+                        }
+                    });
+                }
+                
+                // 获取所有步骤容器
+                const processSteps = document.querySelectorAll('.process-step');
+                console.log('找到的步骤容器数量:', processSteps.length);
+                
+                processSteps.forEach((step, index) => {
+                    const stepNumber = index + 1;
+                    // 找到这个步骤的内容容器
+                    const stepContent = step.querySelector('.step-content');
+                    
+                    if (stepContent) {
+                        // 确保有一个专门的图片区域，如果没有则创建
+                        let stepImageArea = stepContent.querySelector('.step-image');
+                        if (!stepImageArea) {
+                            stepImageArea = document.createElement('div');
+                            stepImageArea.className = 'step-image';
+                            stepContent.appendChild(stepImageArea);
+                        }
+                        
+                        // 清空现有内容
+                        stepImageArea.innerHTML = '';
+                        
+                        // 如果该步骤有图片
+                        if (imagesByStep[stepNumber] && imagesByStep[stepNumber].length > 0) {
+                            console.log(`步骤${stepNumber}有${imagesByStep[stepNumber].length}张图片`);
+                            
+                            // 创建图片网格容器
+                            const imageGrid = document.createElement('div');
+                            imageGrid.className = 'step-images-grid';
+                            imageGrid.style.cssText = `
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 10px;
+                                margin-top: 10px;
+                            `;
+                            
+                            // 为每个图片创建缩略图
+                            imagesByStep[stepNumber].forEach(imageData => {
+                                // 创建缩略图容器
+                                const imageContainer = document.createElement('div');
+                                imageContainer.className = 'step-image-thumbnail';
+                                imageContainer.style.cssText = `
+                                    width: 120px;
+                                    height: 120px;
+                                    position: relative;
+                                    border-radius: 6px;
+                                    overflow: hidden;
+                                    border: 1px solid var(--border-color);
+                                    cursor: pointer;
+                                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                                `;
+                                
+                                // 确保图片URL格式正确
+                                let imageUrl = imageData.url || '';
+                                if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/media/') && !imageUrl.startsWith('/')) {
+                                    imageUrl = '/media/' + imageUrl;
+                                }
+                                console.log('图片URL:', imageUrl);
+                                
+                                // 创建图片元素
+                                const img = document.createElement('img');
+                                img.src = imageUrl;
+                                img.alt = `步骤${stepNumber}图片`;
+                                img.style.cssText = `
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                `;
+                                
+                                // 添加图片加载失败的处理
+                                img.onerror = function() {
+                                    console.error(`图片加载失败: ${imageUrl}`);
+                                    this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22100%25%22%20height%3D%22100%25%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23f0f0f0%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%20fill%3D%22%23999%22%3E图片加载失败%3C%2Ftext%3E%3C%2Fsvg%3E';
+                                };
+                                
+                                // 添加图片加载成功的处理
+                                img.onload = function() {
+                                    console.log(`图片加载成功: ${imageUrl}`);
+                                };
+                                
+                                // 添加图片点击事件（查看大图功能）
+                                img.addEventListener('click', function() {
+                                    // 修复查看大图功能，使用正确的HTML结构和关闭标签
+                                    const newTab = window.open();
+                                    if (newTab) {
+                                        newTab.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <title>查看大图</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+            overflow: hidden;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <button class="close-btn" onclick="window.close()">&times;</button>
+    <img src="${imageUrl}" alt="大图展示">
+</body>
+</html>`);
+                                        newTab.document.close(); // 确保内容完全加载
+                                    } else {
+                                        // 如果新窗口被浏览器阻止，使用alert提示
+                                        alert('图片预览被浏览器阻止，请检查浏览器设置或使用右键在新标签页打开图片。');
+                                    }
+                                });
+                                
+                                // 添加悬停效果
+                                imageContainer.addEventListener('mouseenter', function() {
+                                    this.style.transform = 'scale(1.05)';
+                                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                });
+                                
+                                imageContainer.addEventListener('mouseleave', function() {
+                                    this.style.transform = 'scale(1)';
+                                    this.style.boxShadow = 'none';
+                                });
+                                
+                                imageContainer.appendChild(img);
+                                
+                                // 如果有描述，添加描述
+                                if (imageData.description) {
+                                    const descTooltip = document.createElement('div');
+                                    descTooltip.textContent = imageData.description;
+                                    descTooltip.style.cssText = `
+                                        position: absolute;
+                                        bottom: 0;
+                                        left: 0;
+                                        right: 0;
+                                        padding: 5px;
+                                        background-color: rgba(0, 0, 0, 0.7);
+                                        color: white;
+                                        font-size: 10px;
+                                        text-overflow: ellipsis;
+                                        overflow: hidden;
+                                        white-space: nowrap;
+                                        opacity: 0;
+                                        transition: opacity 0.2s ease;
+                                    `;
+                                    
+                                    imageContainer.appendChild(descTooltip);
+                                    
+                                    // 鼠标悬停时显示描述
+                                    imageContainer.addEventListener('mouseenter', function() {
+                                        descTooltip.style.opacity = '1';
+                                    });
+                                    
+                                    imageContainer.addEventListener('mouseleave', function() {
+                                        descTooltip.style.opacity = '0';
+                                    });
+                                }
+                                
+                                imageGrid.appendChild(imageContainer);
+                            });
+                            
+                            stepImageArea.appendChild(imageGrid);
+                        }
+                    }
+                });
+            }
+            
+            // 调用外部文件中定义的功能函数
+            // setupFullscreenFunctionality() 已移除
+            initializeTaskImages();
+            setupProcessEditFunctionality();
+            setupDeleteFunctionality();
+            // 直接调用loadStepImages函数，因为它现在与调用代码在同一作用域内
+            loadStepImages();
+            // 调用PPT浏览功能函数
+            setupProcessBrowseFunctionality();
+            
+            // 简化版PPT浏览模式功能实现
+            function setupProcessBrowseFunctionality() {
+                  console.log('PPT浏览功能初始化');
+                  const browseButton = document.getElementById('browse-process-button');
+                
+                // 确保浏览按钮存在
+                if (!browseButton) {
+                    console.error('未找到浏览按钮');
+                    return;
+                }
+                
+                // 点击浏览按钮时创建并显示模态框
+                browseButton.addEventListener('click', function() {
+                    console.log('浏览按钮被点击');
+                    
+                    // 移除任何已存在的模态框
+                    const existingModal = document.getElementById('simpleBrowseModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+                    
+                    // 收集步骤数据
+                    const steps = collectSteps();
+                    console.log('收集到的步骤数量:', steps.length);
+                    
+                    if (steps.length === 0) {
+                        alert('暂无实现过程可浏览');
+                        return;
+                    }
+                    
+                    // 创建新的简化模态框
+                    const modal = createSimpleModal();
+                    let currentStep = 0;
+                    
+                    // 更新步骤显示
+                    updateStepDisplay(currentStep);
+                    updateButtonStates();
+                    
+                    // 模态框事件处理
+                    function closeModal() {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                    
+                    function goToPrevStep() {
+                        if (currentStep > 0) {
+                            currentStep--;
+                            updateStepDisplay(currentStep);
+                            updateButtonStates();
+                        }
+                    }
+                    
+                    function goToNextStep() {
+                        if (currentStep < steps.length - 1) {
+                            currentStep++;
+                            updateStepDisplay(currentStep);
+                            updateButtonStates();
+                        }
+                    }
+                    
+                    function updateStepDisplay(index) {
+                        const step = steps[index];
+                        const container = modal.querySelector('#browse-content');
+                        const indicator = modal.querySelector('#step-indicator');
+                        
+                        indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                        
+                        // 清空并创建内容
+                        container.innerHTML = '';
+                        
+                        const content = document.createElement('div');
+                        content.style.textAlign = 'center';
+                        content.style.color = 'white';
+                        
+                        // 步骤标题
+                        const title = document.createElement('h2');
+                        title.textContent = `步骤 ${step.number}`;
+                        title.style.marginBottom = '20px';
+                        content.appendChild(title);
+                        
+                        // 步骤文本
+                        const text = document.createElement('div');
+                        text.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                        text.style.color = '#333';
+                        text.style.padding = '20px';
+                        text.style.borderRadius = '10px';
+                        text.style.maxWidth = '800px';
+                        text.style.margin = '0 auto 20px';
+                        text.style.fontSize = '1.1rem';
+                        text.textContent = step.text;
+                        content.appendChild(text);
+                        
+                        // 步骤图片
+                        if (step.imageUrl) {
+                            const img = document.createElement('img');
+                            img.src = step.imageUrl;
+                            img.alt = `步骤 ${step.number}`;
+                            img.style.maxWidth = '100%';
+                            img.style.maxHeight = '400px';
+                            img.style.marginBottom = '10px';
+                            content.appendChild(img);
+                        }
+                        
+                        container.appendChild(content);
+                    }
+                    
+                    function updateButtonStates() {
+                        const prevBtn = modal.querySelector('#prev-step');
+                        const nextBtn = modal.querySelector('#next-step');
+                        
+                        prevBtn.disabled = currentStep === 0;
+                        nextBtn.disabled = currentStep === steps.length - 1;
+                        
+                        prevBtn.style.opacity = currentStep === 0 ? '0.5' : '1';
+                        nextBtn.style.opacity = currentStep === steps.length - 1 ? '0.5' : '1';
+                    }
+                    
+                    // 绑定事件监听器
+                    modal.querySelector('#close-modal').addEventListener('click', closeModal);
+                    modal.querySelector('#prev-step').addEventListener('click', goToPrevStep);
+                    modal.querySelector('#next-step').addEventListener('click', goToNextStep);
+                    
+                    // 键盘事件
+                    const handleKeydown = function(e) {
+                        if (modal.style.display === 'block') {
+                            switch(e.key) {
+                                case 'ArrowLeft': goToPrevStep(); break;
+                                case 'ArrowRight': goToNextStep(); break;
+                                case 'Escape': closeModal(); break;
+                            }
+                        }
+                    };
+                    
+                    document.addEventListener('keydown', handleKeydown);
+                    
+                    // 点击模态框背景关闭
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) closeModal();
+                    });
+                    
+                    // 显示模态框
+                    modal.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                // 创建简化的模态框
+                function createSimpleModal() {
+                    const modal = document.createElement('div');
+                    modal.id = 'simpleBrowseModal';
+                    modal.style.cssText = `
+                        display: none;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.9);
+                        z-index: 9999;
+                        font-family: Arial, sans-serif;
+                        overflow: hidden;
+                    `;
+                    
+                    // 模态框内容 - 分为头部、内容区和固定底部的控制栏
+                    modal.innerHTML = `
+                        <!-- 头部 -->
+                        <div style="
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            background-color: rgba(0, 0, 0, 0.8);
+                            padding: 15px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            z-index: 10000;
+                        ">
+                            <h3 style="color: white; margin: 0;">{{ task.title }} - 实现过程浏览</h3>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span id="step-indicator" style="color: white;">步骤 1 / 0</span>
+                                <button id="close-modal" style="
+                                    background: none;
+                                    border: none;
+                                    color: white;
+                                    font-size: 24px;
+                                    cursor: pointer;
+                                ">&times;</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 内容区域 - 设置适当的padding以避免被固定的头部和底部遮挡 -->
+                        <div id="browse-content" style="
+                            position: absolute;
+                            top: 70px;  /* 头部高度+padding */
+                            left: 0;
+                            right: 0;
+                            bottom: 80px;  /* 底部控制栏高度+padding */
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            padding: 20px;
+                            overflow: auto;
+                        ">
+                            <!-- 内容将动态加载 -->
+                        </div>
+                        
+                        <!-- 底部控制栏 - 固定在最底部 -->
+                        <div style="
+                            position: fixed;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            background-color: rgba(0, 0, 0, 0.8);
+                            padding: 15px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            gap: 20px;
+                            z-index: 10000;
+                        ">
+                            <button id="prev-step" style="
+                                padding: 10px 20px;
+                                background-color: #6c757d;
+                                color: white;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: not-allowed;
+                                opacity: 0.5;
+                            ">上一步</button>
+                            
+                            <button id="next-step" style="
+                                padding: 10px 20px;
+                                background-color: #6c757d;
+                                color: white;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                            ">下一步</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    return modal;
+                }
+                
+                // 收集步骤数据
+                function collectSteps() {
+                    const steps = [];
+                    const processElements = document.querySelectorAll('.process-step');
+                    
+                    processElements.forEach((element, index) => {
+                        const step = {
+                            number: index + 1,
+                            text: element.querySelector('.step-text')?.innerText || '无描述',
+                            imageUrl: element.querySelector('.step-image img')?.src || null
+                        };
+                        steps.push(step);
+                    });
+                    
+                    return steps;
+                }
+            }
+        });
+    </script>
+{% endblock content %}
