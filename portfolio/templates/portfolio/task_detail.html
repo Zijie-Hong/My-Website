@@ -250,11 +250,30 @@
     }
     
     .step-image-card {
+        flex: 0 0 auto;
+        width: 120px;
+        height: 120px;
         max-width: 100%;
         background-color: var(--card-background);
-        border-radius: 4px;
+        border-radius: 6px;
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    /* 响应式调整 */
+    @media (min-width: 576px) {
+        .step-image-card {
+            width: 140px;
+            height: 140px;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .step-image-card {
+            width: 160px;
+            height: 160px;
+        }
     }
     
     .step-image-preview {
@@ -1106,7 +1125,18 @@
                                         
                                         <div style="background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); 
                                                      padding: 1.5rem; border: 1px solid var(--border-color);">
-                                            <div id="uploaded-step-images" class="row gap-4">
+                                            <div id="uploaded-step-images" class="step-images-grid row gap-4">
+                <style>
+                    .step-images-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 16px;
+                    }
+                    .step-images-grid > div {
+                        flex: 0 0 auto;
+                        max-width: 300px;
+                    }
+                </style>
                                                 <!-- 已上传图片将动态生成 -->
                                             </div>
                                         </div>
@@ -1427,81 +1457,44 @@
                 const card = document.createElement('div');
                 card.className = 'step-image-card';
                 card.setAttribute('data-filename', fileName);
+                card.setAttribute('data-step', stepNumber);
+                card.setAttribute('data-image-id', imageId || '0');
                 card.style = `
                     background: var(--card-bg);
                     border: 1px solid var(--border-color);
-                    border-radius: var(--radius-md);
-                    box-shadow: var(--shadow-sm);
                     overflow: hidden;
-                    transition: var(--transition);
+                    cursor: pointer;
                 `;
                 
-                    // 构建卡片内容
+                // 构建卡片内容 - 简化为纯图片显示
                 card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1rem 0; border-bottom: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center;">
-                                <span style="
-                                    display: inline-flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    width: 28px;
-                                    height: 28px;
-                                    margin-right: 0.75rem;
-                                    background-color: var(--primary-color);
-                                    color: white;
-                                    font-weight: 600;
-                                    border-radius: 50%;
-                                    font-size: 0.9rem;
-                                ">${stepNumber}</span>
-                                <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">
-                                    步骤 ${stepNumber} 图片
-                                </h4>
-                            </div>
-                            <button type="button" class="delete-uploaded-image" data-step="${stepNumber}" data-image-id="${imageId}" style="
-                                background: none;
-                                border: none;
-                                color: var(--text-secondary);
-                                font-size: 1.25rem;
-                                cursor: pointer;
-                                padding: 0.25rem;
-                                border-radius: var(--radius-sm);
-                                transition: var(--transition);
-                            ">
-                                ×
-                            </button>
-                        </div>
-                        <div style="padding: 1rem;">
-                            <div style="
-                                position: relative;
-                                width: 100%;
-                                padding-top: 75%;
-                                margin-bottom: 1rem;
-                                background-color: var(--bg-color);
-                                border-radius: var(--radius-sm);
-                                overflow: hidden;
-                            ">
-                                <img src="${imageSrc}" alt="步骤 ${stepNumber} 图片" style="
-                                    position: absolute;
-                                    top: 0;
-                                    left: 0;
-                                    width: 100%;
-                                    height: 100%;
-                                    object-fit: contain;
-                                ">
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">文件名</p>
-                                <p style="margin: 0.25rem 0 0; font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">
-                                    ${fileName}
-                                </p>
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">描述</p>
-                                <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: var(--text-primary);">
-                                    ${description || '无描述'}
-                                </p>
-                            </div>
-                        </div>
+                    <div style="position: relative; width: 100%; height: 100%;">
+                        <img src="${imageSrc}" alt="步骤 ${stepNumber} 图片" style="
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        ">
+                        <button type="button" class="delete-uploaded-image" data-step="${stepNumber}" data-image-id="${imageId || '0'}" style="
+                            position: absolute;
+                            top: 5px;
+                            right: 5px;
+                            background: rgba(255, 255, 255, 0.9);
+                            border: none;
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--text-secondary);
+                            font-size: 12px;
+                            cursor: pointer;
+                            opacity: 0.7;
+                            transition: opacity 0.2s;
+                        ">
+                            ×
+                        </button>
+                    </div>
                 `;
                 
                 // 悬停效果
@@ -1540,7 +1533,7 @@
                         
                         filteredImages.forEach(imageData => {
                             const imageContainer = document.createElement('div');
-                            imageContainer.className = 'col-12 col-sm-6 col-lg-4';
+                            imageContainer.className = 'col-4 col-sm-4 col-md-3 col-lg-4';
                             
                             // 从URL中提取文件名
                             let imageUrl = imageData.url || '';
@@ -1688,9 +1681,9 @@
                             return;
                         }
                         
-                        // 创建图片预览
+                        // 创建图片预览，这里改缩略图？
                         const imageContainer = document.createElement('div');
-                        imageContainer.className = 'col-12 col-sm-6 col-lg-4';
+                        imageContainer.className = 'col-4 col-sm-4 col-md-3 col-lg-4';
                         
                         // 首先创建一个加载中的占位符
                         imageContainer.innerHTML = `
