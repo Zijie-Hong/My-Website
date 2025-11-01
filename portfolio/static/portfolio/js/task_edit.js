@@ -493,9 +493,9 @@ function setupProcessEditFunctionality() {
             if (result.status === 'success') {
                 showMessage('保存成功,即将刷新页面...', 'success');
                 
-                // 强制刷新页面
+                // 重定向到任务详情页
                 setTimeout(() => {
-                    window.location.reload(true);
+                    window.location.href = `/portfolio/project/${projectId}/task/${taskId}/`;
                 }, 1000);
             } else {
                 showMessage(result.message || '保存失败', 'error');

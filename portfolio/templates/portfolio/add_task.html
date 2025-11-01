@@ -428,9 +428,15 @@
 
                     <div class="form-group">
                         <label for="progress" class="form-label">初始进度</label>
-                        <div class="progress-input-group">
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>完成度</span>
+                                <span id="progress-value">{{ form.progress.value|default:0 }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill" style="width: {{ form.progress.value|default:0 }}%"></div>
+                            </div>
                             <input type="range" id="progress" name="progress" min="0" max="100" step="10" value="{{ form.progress.value|default:0 }}">
-                            <span id="progress-value">{{ form.progress.value|default:0 }}%</span>
                         </div>
                     </div>
 
@@ -460,10 +466,13 @@
             // 进度条实时显示
             const progressSlider = document.getElementById('progress');
             const progressValue = document.getElementById('progress-value');
+            const progressFill = document.getElementById('progress-fill');
             
-            if (progressSlider && progressValue) {
+            if (progressSlider && progressValue && progressFill) {
                 progressSlider.addEventListener('input', function() {
-                    progressValue.textContent = this.value + '%';
+                    const value = this.value;
+                    progressValue.textContent = value + '%';
+                    progressFill.style.width = value + '%';
                 });
             }
             

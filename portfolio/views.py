@@ -279,7 +279,15 @@ def task_detail(request, project_id, task_id):
     # 从数据库获取该任务的所有图片并添加到task中
     try:
         db_images = TaskImage.objects.filter(task_id=task_id).order_by('-uploaded_at')
-        task['db_images'] = db_images
+        
+        # 将QuerySet转换为可JSON序列化的字典列表
+        task['db_images'] = [{
+            'id': img.id,
+            'task_id': img.task_id,
+            'image_url': img.image.url,
+            'description': img.description or '',
+            'uploaded_at': img.uploaded_at.strftime('%Y-%m-%d %H:%M:%S')
+        } for img in db_images]
         
         # 如果JSON文件中没有step_images数据，尝试从数据库添加
         if not task['step_images'] and db_images:
@@ -297,26 +305,46 @@ def task_detail(request, project_id, task_id):
         print(f"获取图片数据时出错: {e}")
         task['db_images'] = []
     
+    # 相关任务逻辑 - 获取同一项目中除了当前任务外的其他任务
+    related_tasks = [t for t in project['tasks'] if t['id'] != int(task_id)]
+    
     return render(request, 'portfolio/task_detail.html', {
         'project': project,
         'task': task,
-        'task_categories': TASK_CATEGORIES
+        'task_categories': TASK_CATEGORIES,
+        'related_tasks': related_tasks
     })
 
 def add_task(request, project_id):
     """新增任务视图"""
     projects = global_data['projects']
-    project = next((p for p in projects if p['id'] == int(project_id)), None)
-    if not project:
-        raise Http404("项目不存在")
     
+    # 处理POST请求
     if request.method == 'POST':
+        # 优先使用表单提交的project_id，如果没有则使用URL参数
+        form_project_id = request.POST.get('project_id')
+        if form_project_id:
+            project_id = form_project_id
+        
+        # 查找对应的项目
+        project = next((p for p in projects if p['id'] == int(project_id)), None)
+        if not project:
+            return render(request, 'portfolio/add_task.html', {
+                'project': None,
+                'projects': projects,
+                'task_categories': TASK_CATEGORIES,
+                'workshop_numbers': WORKSHOP_NUMBERS,
+                'workshop_range': range(1, 6),
+                'error': '请选择有效的项目'
+            })
+        
         # 处理表单提交
         try:
             new_task = {
                 'id': global_data['next_task_id'],
                 'title': request.POST.get('title', '').strip(),
                 'category': request.POST.get('category'),
+                'technology': request.POST.get('technology', '').strip(),
                 'workshop': int(request.POST.get('workshop')),
                 'description': request.POST.get('description', '').strip(),
                 'process': request.POST.get('process', '').strip(),
@@ -334,7 +362,8 @@ def add_task(request, project_id):
             
             # 保存数据
             if save_data(global_data):
-                return redirect('project_detail', project_id=project_id)
+                # 重定向到新创建的任务详情页
+                return redirect('task_detail', project_id=project_id, task_id=new_task['id'])
             else:
                 return render(request, 'portfolio/add_task.html', {
                     'project': project,
@@ -344,7 +373,6 @@ def add_task(request, project_id):
                     'workshop_range': range(1, 6),
                     'error': '保存失败，请重试'
                 })
-                
         except Exception as e:
             return render(request, 'portfolio/add_task.html', {
                 'project': project,
@@ -354,6 +382,11 @@ def add_task(request, project_id):
                 'workshop_range': range(1, 6),
                 'error': str(e)
             })
+    else:
+        # GET请求 - 使用URL参数中的project_id
+        project = next((p for p in projects if p['id'] == int(project_id)), None)
+        if not project:
+            raise Http404("项目不存在")
     
     # GET请求 - 显示表单
     return render(request, 'portfolio/add_task.html', {

@@ -10,6 +10,7 @@
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --primary-color: #667eea;
+            --warning-color: #f72585;
             --text-color: #333;
             --text-muted: #666;
             --bg-light: #f8f9fa;
@@ -90,16 +91,11 @@
             border-color: var(--primary-color);
         }
         .project-icon {
+            position: relative;
             width: 80px;
             height: 80px;
-            border-radius: 50%;
-            background: var(--primary-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin: 0 auto 1.5rem;
-            color: white;
-            font-size: 2rem;
+            overflow: visible;
         }
         .project-title {
             font-size: 1.5rem;
@@ -233,13 +229,53 @@
                 font-size: 1.25rem;
             }
         }
+        
+        /* 优化的形状变形动画 - 减少性能消耗 */
+        @keyframes shape-morph {
+            0% {
+                border-radius: 60% 40% 70% 30% / 40% 50% 60% 50%;
+                transform: translate(0, 0); /* 移除旋转以减少性能消耗 */
+            }
+            25% {
+                border-radius: 40% 60% 30% 70% / 50% 40% 50% 60%;
+                transform: translate(5px, -5px); /* 减少移动距离 */
+            }
+            50% {
+                border-radius: 70% 30% 50% 50% / 60% 70% 40% 30%;
+                transform: translate(0, 0);
+            }
+            75% {
+                border-radius: 50% 50% 30% 70% / 40% 60% 50% 60%;
+                transform: translate(-5px, 5px); /* 减少移动距离 */
+            }
+            100% {
+                border-radius: 60% 40% 70% 30% / 40% 50% 60% 50%;
+                transform: translate(0, 0);
+            }
+        }
+        
+        /* 为支持prefers-reduced-motion的用户禁用动画 */
+        @media (prefers-reduced-motion: reduce) {
+            .footer-shape {
+                animation: none !important;
+                transform: none !important;
+            }
+        }
     </style>
     
     <!-- 英雄区域 -->
     <section class="hero-section" style="background: var(--primary-gradient); color: white; padding: 6rem 0; position: relative; overflow: hidden;">
-        <!-- 毛玻璃装饰元素 -->
-        <div style="position: absolute; top: -10%; left: -10%; width: 30%; height: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(50px); border-radius: 50%; transform: rotate(-15deg);"></div>
-        <div style="position: absolute; bottom: -15%; right: -10%; width: 40%; height: 70%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(50px); border-radius: 50%;"></div>
+        <!-- 优化后的流体形状设计 - 减少性能消耗 -->
+        <div class="shape-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+            <!-- 简化的主流体形状 - 减少尺寸和复杂度 -->
+            <div class="footer-shape" style="position: absolute; width: 35%; height: 70%; background: rgba(255, 255, 255, 0.1); opacity: 0.6; border-radius: 60% 40% 70% 30% / 40% 50% 60% 50%; animation: shape-morph 20s ease-in-out infinite alternate; top: 50%; left: -5%; transform: translateY(-50%);
+                /* 使用will-change优化动画性能 */
+                will-change: border-radius, transform;
+                /* 硬件加速 */
+                transform: translateZ(0) translateY(-50%);
+            "></div>
+            <!-- 移除第二个流体形状以进一步提高性能 -->
+        </div>
         
         <div class="container text-center" style="position: relative; z-index: 1;">
             <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">项目任务管理系统</h1>
@@ -248,7 +284,7 @@
     </section>
 
     <!-- 项目概览区域 - 三模块一排显示 -->
-    <section class="projects-overview-section" style="padding: 5rem 0; background-color: var(--bg-light);">
+    <section class="projects-overview-section" style="padding: 3rem 0; background-color: var(--bg-light);">
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">项目概览</h2>
             
@@ -256,8 +292,8 @@
                 <!-- AFP项目 -->
                 <div>
                     <div class="project-overview-card">
-                        <div class="project-icon">
-                            <i class="fas fa-project-diagram"></i>
+                        <div class="project-icon" style="position: relative; width: 80px; height: 80px; margin: 0 auto 1.5rem; overflow: visible;">
+                            <div class="footer-shape" style="position: absolute; width: 100%; height: 100%; background: var(--primary-gradient); opacity: 0.8; animation: shape-morph 8s ease-in-out infinite alternate;"></div>
                         </div>
                         <h3 class="project-title">AFP项目</h3>
                         <p class="project-description">高级金融平台项目，专注于开发下一代金融解决方案，包含交易系统和数据分析功能。</p>
@@ -270,8 +306,8 @@
                 <!-- AAP项目 -->
                 <div>
                     <div class="project-overview-card">
-                        <div class="project-icon">
-                            <i class="fas fa-mobile-alt"></i>
+                        <div class="project-icon" style="position: relative; width: 80px; height: 80px; margin: 0 auto 1.5rem; overflow: visible;">
+                            <div class="footer-shape" style="position: absolute; width: 100%; height: 100%; background: var(--secondary-gradient, linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%)); opacity: 0.8; animation: shape-morph 10s ease-in-out infinite alternate-reverse;"></div>
                         </div>
                         <h3 class="project-title">AAP项目</h3>
                         <p class="project-description">高级应用平台项目，致力于构建跨平台移动应用框架，提供统一的用户体验和开发接口。</p>
@@ -284,8 +320,8 @@
                 <!-- 其他项目 -->
                 <div>
                     <div class="project-overview-card">
-                        <div class="project-icon">
-                            <i class="fas fa-cubes"></i>
+                        <div class="project-icon" style="position: relative; width: 80px; height: 80px; margin: 0 auto 1.5rem; overflow: visible;">
+                            <div class="footer-shape" style="position: absolute; width: 100%; height: 100%; background: var(--accent-gradient, linear-gradient(135deg, #FA709A 0%, #FEE140 100%)); opacity: 0.8; animation: shape-morph 12s ease-in-out infinite;"></div>
                         </div>
                         <h3 class="project-title">其他项目</h3>
                         <p class="project-description">包含正在规划和开发中的其他小型项目，提供创新解决方案和技术探索。</p>
@@ -293,6 +329,37 @@
                             <a href="{% url 'project_detail' project_id=3 %}" class="btn btn-primary">查看详情</a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 统计概览 -->
+    <section class="stats-section" style="padding: 3rem 0; background-color: var(--bg-light);">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">任务统计</h2>
+            <!-- 使用CSS Grid实现三个容器同一行且自适应 -->
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(200px, 1fr)); gap: 2rem; width: 100%; max-width: 900px; margin: 0 auto;">
+                <!-- 活跃项目统计 -->
+                <div style="background-color: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--warning-color); margin-bottom: 0.5rem;">{{ projects|length }}</div>
+                    <div style="font-size: 1rem; color: var(--text-light); font-weight: 500;">活跃项目</div>
+                </div>
+                
+                <!-- 总任务数统计 -->
+                <div style="background-color: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color); margin-bottom: 0.5rem;">
+                        {% with total_tasks=projects|sum_project_tasks %}{{ total_tasks }}{% endwith %}
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-light); font-weight: 500;">总任务数</div>
+                </div>
+                
+                <!-- 已完成任务统计 -->
+                <div style="background-color: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                    <div style="font-size: 2.5rem; font-weight: 800; color: green; margin-bottom: 0.5rem;">
+                        {% with completed_tasks=projects|count_completed_tasks %}{{ completed_tasks }}{% endwith %}
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-light); font-weight: 500;">已完成任务</div>
                 </div>
             </div>
         </div>
@@ -424,38 +491,5 @@
         </div>
     </section>
 
-    <!-- 统计概览 -->
-    <section class="stats-section" style="padding: 5rem 0; background-color: var(--bg-light);">
-        <div class="container">
-            <h2 style="text-align: center; margin-bottom: 4rem; font-size: 2.25rem; font-weight: 700; color: var(--text-color);">任务统计</h2>
-            <div class="row gap-5 justify-content-center">
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number">{{ projects|length }}</div>
-                        <div class="stat-label">活跃项目</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number">
-                            {% with total_tasks=projects|sum_project_tasks %}
-                            {{ total_tasks }}
-                            {% endwith %}
-                        </div>
-                        <div class="stat-label">总任务数</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number">
-                            {% with completed_tasks=projects|count_completed_tasks %}
-                            {{ completed_tasks }}
-                            {% endwith %}
-                        </div>
-                        <div class="stat-label">已完成任务</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    
 {% endblock %}

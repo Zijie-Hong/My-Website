@@ -202,6 +202,24 @@
         transition: width 0.3s ease;
     }
     
+    /* 面包屑导航样式 */
+    .breadcrumb a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .breadcrumb a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+    
+    .breadcrumb .current {
+        color: white;
+        font-weight: 500;
+    }
+    
+    
     /* 响应式设计 */
     @media (max-width: 768px) {
         .form-section {
@@ -221,7 +239,7 @@
                 <a href="{% url 'home' %}">首页</a> &gt; 
                 <a href="{% url 'project_detail' project_id=project.id %}">{{ project.name }}</a> &gt; 
                 <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}">{{ task.title }}</a> &gt; 
-                <span>修改任务</span>
+                <a href="#" class="current">修改任务</a>
             </div>
             <h1>修改任务</h1>
         </div>
