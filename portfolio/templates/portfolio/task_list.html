@@ -2,25 +2,28 @@
 {% load static %}
 {% load portfolio_filters %}
 
+{% block body_class %}task-page{% endblock %}
+
 {% block title %}任务列表 - 项目管理系统{% endblock %}
 
 {% block content %}
 <style>
-    /* CSS变量定义 */
+        /* CSS变量定义 - 可靠自信的紫色到蓝色过渡主题 */
     :root {
-        --primary-color: #4361ee;
-        --primary-light: #4895ef;
-        --secondary-color: #3a0ca3;
-        --success-color: #4cc9f0;
-        --warning-color: #f72585;
-        --bg-color: #f8f9fa;
+        --primary-color: #6a1b9a;          /* 深紫色 - 可靠、自信 */
+        --secondary-color: #3f51b5;        /* 深蓝色 - 专业过渡 */
+        --tertiary-color: #5c6bc0;         /* 蓝紫色 - 专业辅助 */
+        --success-color: #2e7d32;          /* 深绿色 - 专业成功状态 */
+        --warning-color: #f57c00;          /* 深橙色 - 专业警告状态 */
+        --danger-color: #c62828;           /* 深红色 - 专业错误状态 */
+        --bg-color: #e3f2fd;
         --card-bg: #ffffff;
-        --text-primary: #212529;
-        --text-secondary: #6c757d;
-        --border-color: #e9ecef;
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --text-primary: #263238;
+        --text-muted: #607d8b;
+        --border-color: #b0bec5;
+        --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.18);
         --radius-sm: 6px;
         --radius-md: 8px;
         --radius-lg: 12px;
@@ -29,8 +32,66 @@
     
     /* 全局样式优化 */
     .container {
-        max-width: 1200px;
-        margin: 0 auto;
+        width: 100%;
+        margin: 0;
+        padding: 0 15px;
+        max-width: none;
+    }
+    
+    /* 任务按钮区域 - 完全自适应宽度 */
+    .task-buttons {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* 任务卡片 - 自适应宽度和高度 */
+    .task-card {
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+    
+    /* 响应式任务网格 - 使用grid布局确保比例自适应 */
+    .tasks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        justify-items: stretch;
+    }
+    
+    /* 确保任务卡片在任何宽度下都能自适应 */
+    .task-card {
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    /* 响应式设计调整 */
+    @media (max-width: 768px) {
+        .tasks-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* 中等屏幕尺寸优化 */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .tasks-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+    
+    /* 大屏幕优化 - 确保足够大的屏幕上可以显示更多列 */
+    @media (min-width: 1200px) {
+        .tasks-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
     }
     
     /* 优化的形状变形动画 - 用于任务列表标题 */
@@ -69,12 +130,16 @@
     .page-header {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
-        padding: 3rem 0;
-        margin-bottom: 2rem;
+        padding: 18rem 0 12rem;
+        margin-top: -120px;
+        padding-top: 200px;
         text-align: center;
-        border-radius: var(--radius-lg);
         position: relative;
         overflow: hidden;
+        z-index: 2;
+        width: 100%;
+        left: 0;
+        right: 0;
     }
     
     /* 流体形状容器 */
@@ -100,7 +165,7 @@
     
     /* 主要流体形状 */
     .fluid-shape.primary {
-        width: 40%;
+        width: 45%;
         height: 80%;
         top: 40%;
         left: -10%;
@@ -109,10 +174,10 @@
     
     /* 次要流体形状 */
     .fluid-shape.secondary {
-        width: 30%;
-        height: 60%;
+        width: 45%;
+        height: 80%;
         top: 20%;
-        right: 10%;
+        right: -10%;
         border-radius: 40% 60% 30% 70% / 50% 40% 50% 60%;
         opacity: 0.5;
         animation-delay: 2s;
@@ -120,13 +185,13 @@
     }
     
     .page-header h1 {
-        font-size: 2.5rem;
+        font-size: 4.5rem;
         margin-bottom: 0.5rem;
-        font-weight: 700;
+        font-weight: 800;
     }
     
     .page-header p {
-        font-size: 1.1rem;
+        font-size: 1.5rem;
         opacity: 0.9;
         margin-bottom: 1.5rem;
     }
@@ -153,8 +218,15 @@
         background: var(--card-bg);
         padding: 1.5rem;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow-md);
         margin-bottom: 2rem;
+        margin-top: -4rem;
+        z-index: 3;
+        position: relative;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     .filter-controls {
@@ -397,94 +469,116 @@
             <div class="fluid-shape secondary"></div>
         </div>
         
-        <div class="container" style="position: relative; z-index: 1;">
-            <h1>任务列表</h1>
-            <p>浏览和管理所有任务</p>
+        <div style="position: relative; z-index: 1; width: 100%;">
+            <h1 style="text-align: center; width: 100%; margin: 0 auto;">任务列表</h1>
+            <p style="text-align: center; width: 100%; margin: 0 auto;">浏览和管理所有任务</p>
             {% if all_projects %}
-            <a href="{% url 'add_task' project_id=all_projects.0.id %}" class="btn btn-primary add-task-main">
-                <i class="fas fa-plus"></i> 新增任务
-            </a>
-            {% endif %}
-        </div>
-    </section>
-
-    <!-- 筛选和搜索 -->
-    <section class="filter-section">
-        <div class="container">
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label for="project-filter">项目：</label>
-                    <select id="project-filter" onchange="this.form.submit()" form="task-filter-form">
-                        <option value="all">全部项目</option>
-                        {% for project in all_projects %}
-                        <option value="{{ project.id }}" {% if selected_project == project.id %}selected{% endif %}>{{ project.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="category-filter">分类：</label>
-                    <select id="category-filter" onchange="this.form.submit()" form="task-filter-form">
-                        <option value="all">全部分类</option>
-                        {% for key, category in task_categories.items %}
-                        <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ category.display_name|default:category.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="workshop-filter">Workshop：</label>
-                    <select id="workshop-filter" onchange="this.form.submit()" form="task-filter-form">
-                        <option value="all">全部Workshop</option>
-                        {% for i in workshop_range %}
-                        <option value="{{ i }}" {% if selected_workshop == i|stringformat:"s" %}selected{% endif %}>第{% if i == 1 %}一{% elif i == 2 %}二{% elif i == 3 %}三{% elif i == 4 %}四{% elif i == 5 %}五{% endif %}次</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <form id="task-filter-form" method="get" style="display: none;">
-                    <input type="hidden" id="project-input" name="project" value="">
-                    <input type="hidden" id="category-input" name="category" value="">
-                    <input type="hidden" id="workshop-input" name="workshop" value="">
-                </form>
+            <div style="text-align: center; width: 100%;">
+                <a href="{% url 'add_task' project_id=all_projects.0.id %}" class="btn btn-primary add-task-main">
+                    <i class="fas fa-plus"></i> 新增任务
+                </a>
             </div>
+            {% endif %}
         </div>
     </section>
     
     <script>
-        // 统一处理筛选器变化的函数
-        function handleFilterChange() {
-            const form = document.getElementById('task-filter-form');
-            const projectInput = document.getElementById('project-input');
-            const categoryInput = document.getElementById('category-input');
-            const workshopInput = document.getElementById('workshop-input');
-            const projectFilter = document.getElementById('project-filter');
-            const categoryFilter = document.getElementById('category-filter');
-            const workshopFilter = document.getElementById('workshop-filter');
-            
-            // 设置所有筛选值
-            projectInput.value = projectFilter.value;
-            categoryInput.value = categoryFilter.value;
-            workshopInput.value = workshopFilter.value;
-            
-            // 提交表单
-            form.submit();
-        }
+        // 滚动监听导航栏样式变化
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('nav'); // 使用通用选择器更安全
+            if (navbar && window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else if (navbar) {
+                navbar.classList.remove('scrolled');
+            }
+        });
         
-        // 初始化事件监听器
+        // 初始化导航栏状态
         document.addEventListener('DOMContentLoaded', function() {
-            const projectFilter = document.getElementById('project-filter');
-            const categoryFilter = document.getElementById('category-filter');
-            const workshopFilter = document.getElementById('workshop-filter');
-            
-            if (projectFilter && categoryFilter && workshopFilter) {
-                projectFilter.addEventListener('change', handleFilterChange);
-                categoryFilter.addEventListener('change', handleFilterChange);
-                workshopFilter.addEventListener('change', handleFilterChange);
+            const navbar = document.querySelector('nav');
+            if (navbar && window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else if (navbar) {
+                navbar.classList.remove('scrolled');
             }
         });
     </script>
 
     <!-- 任务列表 -->
     <section class="tasks-section">
-        <div class="container">
+        <div class="content-container">
+            <!-- 筛选和搜索 -->
+            <section class="filter-section">
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="project-filter">项目：</label>
+                        <select id="project-filter" onchange="this.form.submit()" form="task-filter-form">
+                            <option value="all">全部项目</option>
+                            {% for project in all_projects %}
+                            <option value="{{ project.id }}" {% if selected_project == project.id %}selected{% endif %}>{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="category-filter">分类：</label>
+                        <select id="category-filter" onchange="this.form.submit()" form="task-filter-form">
+                            <option value="all">全部分类</option>
+                            {% for key, category in task_categories.items %}
+                            <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>{{ category.display_name|default:category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="workshop-filter">Workshop：</label>
+                        <select id="workshop-filter" onchange="this.form.submit()" form="task-filter-form">
+                            <option value="all">全部Workshop</option>
+                            {% for i in workshop_range %}
+                            <option value="{{ i }}" {% if selected_workshop == i|stringformat:"s" %}selected{% endif %}>第{% if i == 1 %}一{% elif i == 2 %}二{% elif i == 3 %}三{% elif i == 4 %}四{% elif i == 5 %}五{% endif %}次</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <form id="task-filter-form" method="get" style="display: none;">
+                        <input type="hidden" id="project-input" name="project" value="">
+                        <input type="hidden" id="category-input" name="category" value="">
+                        <input type="hidden" id="workshop-input" name="workshop" value="">
+                    </form>
+                </div>
+            </section>
+            
+            <script>
+                // 统一处理筛选器变化的函数
+                function handleFilterChange() {
+                    const form = document.getElementById('task-filter-form');
+                    const projectInput = document.getElementById('project-input');
+                    const categoryInput = document.getElementById('category-input');
+                    const workshopInput = document.getElementById('workshop-input');
+                    const projectFilter = document.getElementById('project-filter');
+                    const categoryFilter = document.getElementById('category-filter');
+                    const workshopFilter = document.getElementById('workshop-filter');
+                    
+                    // 设置所有筛选值
+                    projectInput.value = projectFilter.value;
+                    categoryInput.value = categoryFilter.value;
+                    workshopInput.value = workshopFilter.value;
+                    
+                    // 提交表单
+                    form.submit();
+                }
+                
+                // 初始化事件监听器
+                document.addEventListener('DOMContentLoaded', function() {
+                    const projectFilter = document.getElementById('project-filter');
+                    const categoryFilter = document.getElementById('category-filter');
+                    const workshopFilter = document.getElementById('workshop-filter');
+                    
+                    if (projectFilter && categoryFilter && workshopFilter) {
+                        projectFilter.addEventListener('change', handleFilterChange);
+                        categoryFilter.addEventListener('change', handleFilterChange);
+                        workshopFilter.addEventListener('change', handleFilterChange);
+                    }
+                });
+            </script>
+            
             <!-- 按项目分组显示 -->
             {% for project in projects_with_tasks %}
             <div class="project-group">

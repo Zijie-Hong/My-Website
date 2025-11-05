@@ -14,7 +14,10 @@
           "description": "优化高频交易算法，提升执行效率和稳定性。",
           "process": "1. 性能瓶颈分析\n2. 算法重构\n3. 并发优化\n4. 回测验证",
           "results": "算法执行速度提升35%，资源占用降低20%。",
-          "progress": 85
+          "progress": 85,
+          "workshop_text": "第一次workshop",
+          "step_images": [],
+          "db_images": []
         },
         {
           "id": 102,
@@ -23,9 +26,27 @@
           "technology": "JMeter, Postman",
           "workshop": 2,
           "description": "验证风险控制策略在各种市场条件下的有效性。",
-          "process": "1. 测试场景设计\n2. 压力测试执行\n3. 边界测试\n4. 报告生成",
+          "process": "1\r\n2",
           "results": "成功识别并修复3个潜在风险点，系统稳定性提升。",
-          "progress": 90
+          "progress": 90,
+          "workshop_text": "第二次workshop",
+          "step_images": [
+            {
+              "step": 1,
+              "url": "/media/task_step_images/task_102_step_1_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "file_name": "task_102_step_1_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "filename": "task_102_step_1_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
+              "description": "无描述"
+            },
+            {
+              "step": 1,
+              "url": "/media/task_step_images/task_102_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "file_name": "task_102_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "filename": "task_102_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "description": "无描述"
+            }
+          ],
+          "db_images": []
         },
         {
           "id": 103,
@@ -36,7 +57,10 @@
           "description": "为企业客户提供定制化财务报表和数据分析服务。",
           "process": "1. 需求收集\n2. 查询开发\n3. 数据验证\n4. 交付培训",
           "results": "客户满意度提升40%，报表生成时间缩短50%。",
-          "progress": 100
+          "progress": 100,
+          "workshop_text": "第一次workshop",
+          "step_images": [],
+          "db_images": []
         }
       ]
     },
@@ -54,7 +78,10 @@
           "description": "开发预测分析模型，实现业务趋势的智能预测。",
           "process": "1. 数据预处理\n2. 特征工程\n3. 模型训练\n4. 模型评估",
           "results": "预测准确率达到89%，超过业务目标10个百分点。",
-          "progress": 70
+          "progress": 70,
+          "workshop_text": "第二次workshop",
+          "step_images": [],
+          "db_images": []
         },
         {
           "id": 202,
@@ -69,18 +96,111 @@
           "workshop_text": "第三次workshop",
           "step_images": [
             {
-              "step": 2,
-              "url": "/media/task_step_images/task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
-              "file_name": "task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
-              "filename": "task_202_step_2_0_a6b529429d7cb69d3f8309c6ff969e31.jpg",
-              "description": "无描述"
-            },
-            {
-              "step": 2,
-              "url": "/media/task_step_images/task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
-              "file_name": "task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
-              "filename": "task_202_step_2_1_c4f91b91368159b29b4b9454357b4565.jpg",
+              "step": 1,
+              "url": "/media/task_step_images/task_202_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "file_name": "task_202_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "filename": "task_202_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
               "description": "无描述"
             }
           ],
-          "db_images": 
+          "db_images": []
+        },
+        {
+          "id": 306,
+          "title": "Test3",
+          "category": "Support",
+          "technology": "",
+          "workshop": 4,
+          "description": "333",
+          "process": "2\r\n1",
+          "results": "",
+          "progress": 40,
+          "workshop_text": "第四次workshop",
+          "step_images": [
+            {
+              "step": 1,
+              "url": "/media/task_step_images/task_306_step_1_0_640_(1).webp",
+              "file_name": "task_306_step_1_0_640_(1).webp",
+              "filename": "task_306_step_1_0_640_(1).webp",
+              "description": "无描述"
+            },
+            {
+              "step": 1,
+              "url": "/media/task_step_images/task_306_step_1_1_640_(2).webp",
+              "file_name": "task_306_step_1_1_640_(2).webp",
+              "filename": "task_306_step_1_1_640_(2).webp",
+              "description": "无描述"
+            },
+            {
+              "step": 1,
+              "url": "/media/task_step_images/task_306_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "file_name": "task_306_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "filename": "task_306_step_1_0_c4f91b91368159b29b4b9454357b4565.jpg",
+              "description": "无描述"
+            }
+          ],
+          "db_images": []
+        },
+        {
+          "id": 308,
+          "title": "Test",
+          "category": "R&D",
+          "technology": "",
+          "workshop": 4,
+          "description": "555",
+          "process": "",
+          "results": "",
+          "progress": 10,
+          "workshop_text": "第四次workshop",
+          "step_images": [],
+          "db_images": []
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "移动应用开发",
+      "description": "开发跨平台移动应用，提供便捷的用户服务和功能访问。",
+      "tasks": [
+        {
+          "id": 301,
+          "title": "推送通知功能实现",
+          "category": "R&D",
+          "technology": "Flutter, Firebase",
+          "workshop": 3,
+          "description": "实现用户个性化推送通知功能，提升用户活跃度。",
+          "process": "1. 需求分析\r\n2. 技术方案设计\r\n3. 功能开发\r\n4. 性能测试",
+          "results": "通知到达率达到98%，用户点击转化率提升20%。",
+          "progress": 60,
+          "workshop_text": "第三次workshop",
+          "step_images": [],
+          "db_images": []
+        },
+        {
+          "id": 302,
+          "title": "版本兼容性测试",
+          "category": "UAT",
+          "technology": "Appium",
+          "workshop": 4,
+          "description": "测试应用在不同设备和系统版本上的兼容性。",
+          "process": "1. 测试设备选择\n2. 测试用例执行\n3. 问题收集\n4. 兼容性修复",
+          "results": "支持98%主流设备和系统版本，稳定性评分4.8/5。",
+          "progress": 40
+        },
+        {
+          "id": 303,
+          "title": "用户反馈问题修复",
+          "category": "Support",
+          "technology": "Flutter, Dart",
+          "workshop": 2,
+          "description": "处理用户反馈的应用崩溃和功能异常问题。",
+          "process": "1. 问题分类\n2. 优先级评估\n3. 问题修复\n4. 版本发布",
+          "results": "应用崩溃率降低60%，用户满意度提升15%。",
+          "progress": 95
+        }
+      ]
+    }
+  ],
+  "next_task_id": 309,
+  "next_project_id": 4
+}

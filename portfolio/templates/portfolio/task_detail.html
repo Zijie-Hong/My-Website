@@ -41,25 +41,26 @@
     console.log('Task images data:', window.task.step_images);
 </script>
 <style>
-    /* CSS变量定义 */
+    /* CSS变量定义 - 可靠自信的紫色到蓝色过渡主题 */
     :root {
-        --primary-color: #4361ee;
-        --primary-light: #4895ef;
-        --secondary-color: #3a0ca3;
-        --success-color: #4cc9f0;
-        --warning-color: #f72585;
-        --bg-color: #f8f9fa;
+        --primary-color: #6a1b9a;          /* 深紫色 - 可靠、自信 */
+        --primary-light: #9c27b0;          /* 中紫色 */
+        --secondary-color: #3f51b5;        /* 深蓝色 - 专业过渡 */
+        --success-color: #2e7d32;          /* 深绿色 - 专业成功状态 */
+        --warning-color: #f57c00;          /* 深橙色 - 专业警告状态 */
+        --danger-color: #c62828;           /* 深红色 - 专业错误状态 */
+        --bg-color: #e3f2fd;
         --card-bg: #ffffff;
-        --text-primary: #212529;
-        --text-secondary: #6c757d;
-        --border-color: #e9ecef;
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --text-primary: #263238;
+        --text-secondary: #607d8b;
+        --border-color: rgba(221, 223, 226, 0.7);
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
         --radius-sm: 6px;
         --radius-md: 8px;
         --radius-lg: 12px;
-        --transition: all 0.3s ease;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     /* 全局样式优化 */
@@ -551,7 +552,11 @@
         cursor: pointer;
         text-align: center;
         font-size: 0.95rem;
+        width: 100%;
+        display: inline-block;
+        box-sizing: border-box;
     }
+    
     
     .btn-primary {
         background-color: var(--primary-color);
@@ -1264,7 +1269,7 @@
                     <!-- 操作按钮 -->
                     <div class="sidebar-section">
                         <div class="action-buttons">
-                            <a href="{% url 'edit_task' project_id=project.id task_id=task.id %}" class="btn btn-secondary">
+                            <a href="{% url 'edit_task' project_id=project.id task_id=task.id %}" class="btn btn-primary">
                                 修改任务
                             </a>
                             <button class="btn btn-danger" onclick="document.getElementById('deleteModal').classList.add('show')">
@@ -1464,35 +1469,41 @@
                 card.style = `
                     background: var(--card-bg);
                     border: 1px solid var(--border-color);
+                    border-radius: var(--radius-md);
                     overflow: hidden;
                     cursor: pointer;
+                    min-height: 150px; /* 确保卡片有最小高度 */
+                    position: relative;
                 `;
                 
                 // 构建卡片内容 - 简化为纯图片显示
                 card.innerHTML = `
-                    <div style="position: relative; width: 100%; height: 100%;">
+                    <div style="position: relative; width: 100%; height: 100%; min-height: 150px;">
                         <img src="${imageSrc}" alt="步骤 ${stepNumber} 图片" style="
                             width: 100%;
                             height: 100%;
                             object-fit: cover;
+                            min-height: 150px;
                         ">
                         <button type="button" class="delete-uploaded-image" data-step="${stepNumber}" data-image-id="${imageId || '0'}" style="
                             position: absolute;
-                            top: 5px;
-                            right: 5px;
+                            top: 8px;
+                            right: 8px;
                             background: rgba(255, 255, 255, 0.9);
                             border: none;
                             border-radius: 50%;
-                            width: 20px;
-                            height: 20px;
+                            width: 32px; /* 增大按钮尺寸 */
+                            height: 32px; /* 增大按钮尺寸 */
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             color: var(--text-secondary);
-                            font-size: 12px;
+                            font-size: 16px; /* 增大图标大小 */
+                            font-weight: bold;
                             cursor: pointer;
-                            opacity: 0.7;
-                            transition: opacity 0.2s;
+                            opacity: 0.9;
+                            transition: all 0.2s;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                         ">
                             ×
                         </button>
@@ -1505,6 +1516,7 @@
                     card.style.boxShadow = 'var(--shadow-md)';
                     const deleteBtn = card.querySelector('.delete-uploaded-image');
                     deleteBtn.style.color = '#dc3545';
+                    deleteBtn.style.backgroundColor = 'rgba(255, 255, 255, 1)';
                 });
                 
                 card.addEventListener('mouseleave', function() {
@@ -1512,59 +1524,112 @@
                     card.style.boxShadow = 'var(--shadow-sm)';
                     const deleteBtn = card.querySelector('.delete-uploaded-image');
                     deleteBtn.style.color = 'var(--text-secondary)';
+                    deleteBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
                 });
                 
                 return card;
             }
                 
                 // 显示已上传的步骤图片
-                function displayUploadedStepImages() {
-                    const uploadedImagesContainer = document.getElementById('uploaded-step-images');
-                    const stepImagesData = {% if task.step_images %}{{ task.step_images|safe }}{% else %}[]{% endif %};
-                    
-                    // 清空容器
-                    uploadedImagesContainer.innerHTML = '';
-                    
-                    if (stepImagesData && stepImagesData.length > 0) {
-                        // 过滤掉已标记为删除的图片
-                        const filteredImages = stepImagesData.filter(imageData => {
-                            // 构建图片标识键，格式为"步骤_图片ID"
-                            const imageKey = `${imageData.step}_${imageData.id || '0'}`;
-                            return !window.imagesToDelete || !window.imagesToDelete.has(imageKey);
-                        });
-                        
-                        filteredImages.forEach(imageData => {
-                            const imageContainer = document.createElement('div');
-                            imageContainer.className = 'col-6 col-sm-4 col-md-3'; // 调整网格类以确保卡片并排显示
-                            
-                            // 从URL中提取文件名
-                            let imageUrl = imageData.url || '';
-                            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/') && imageUrl.length > 0) {
-                                imageUrl = '/' + imageUrl;
-                            }
-                            const fileName = imageUrl ? imageUrl.substring(imageUrl.lastIndexOf('/') + 1) : 'unknown.png';
-                            
-                            const card = createStepImageCard(
-                                imageData.step, 
-                                imageUrl, 
-                                fileName, 
-                                imageData.description
-                            );
-                            
-                            imageContainer.appendChild(card);
-                            uploadedImagesContainer.appendChild(imageContainer);
-                        });
-                        
-                        // 添加删除事件监听
-                        document.querySelectorAll('.delete-uploaded-image').forEach(button => {
-                            button.addEventListener('click', function() {
-                                const stepNumber = this.getAttribute('data-step');
-                                const imageId = this.getAttribute('data-image-id') || '0';
-                                const filename = this.closest('.step-image-card')?.getAttribute('data-filename');
-                                deleteStepImage(stepNumber, imageId, filename);
-                            });
-                        });
-                    }
+                function displayUploadedStepImages() { 
+                     const uploadedImagesContainer = document.getElementById('uploaded-step-images'); 
+                     const stepImagesData = {% if task.step_images %}{{ task.step_images|safe }}{% else %}[]{% endif %}; 
+                      
+                     // 清空容器 
+                     uploadedImagesContainer.innerHTML = ''; 
+                      
+                     if (stepImagesData && stepImagesData.length > 0) { 
+                         // 过滤掉已标记为删除的图片 
+                         const filteredImages = stepImagesData.filter(imageData => { 
+                             // 构建图片标识键，格式为"步骤_图片ID" 
+                             const imageKey = `${imageData.step}_${imageData.id || '0'}`; 
+                             return !window.imagesToDelete || !window.imagesToDelete.has(imageKey); 
+                         }); 
+                          
+                         // 按步骤对图片进行分组 
+                         const imagesByStep = {}; 
+                         filteredImages.forEach(imageData => { 
+                             if (!imagesByStep[imageData.step]) { 
+                                 imagesByStep[imageData.step] = []; 
+                             } 
+                             imagesByStep[imageData.step].push(imageData); 
+                         }); 
+                          
+                         // 按步骤顺序处理图片（从步骤1开始） 
+                         const stepNumbers = Object.keys(imagesByStep).map(step => parseInt(step)).sort((a, b) => a - b); 
+                         
+                         stepNumbers.forEach(stepNumber => { 
+                             const stepImages = imagesByStep[stepNumber]; 
+                             
+                             // 为每个步骤创建一个标题和行容器 
+                             const stepSection = document.createElement('div'); 
+                             stepSection.className = 'mb-6'; 
+                             
+                             // 添加步骤标题 
+                             const stepTitle = document.createElement('h4'); 
+                             stepTitle.textContent = `步骤 ${stepNumber}`; 
+                             stepTitle.style.marginBottom = '1rem'; 
+                             stepTitle.style.fontSize = '1rem'; 
+                             stepTitle.style.fontWeight = '600'; 
+                             stepTitle.style.color = 'var(--text-primary)'; 
+                             stepSection.appendChild(stepTitle); 
+                             
+                             // 创建行容器来放置同一步骤的所有图片 
+                             const rowContainer = document.createElement('div'); 
+                             rowContainer.style = `
+                                 display: flex;
+                                 flex-wrap: nowrap; // 禁止换行，让图片在同一行显示
+                                 gap: 1rem;
+                                 width: 100%;
+                                 overflow-x: auto; // 添加水平滚动
+                                 padding-bottom: 0.5rem; // 添加底部内边距，避免滚动条遮挡内容
+                             `;
+                              
+                             // 为该步骤的每个图片创建卡片
+                             stepImages.forEach(imageData => {
+                                 const imageContainer = document.createElement('div');
+                                 imageContainer.style = `
+                                     flex-shrink: 0; // 防止卡片被压缩
+                                     width: 200px; // 固定宽度
+                                     min-height: 150px; // 确保容器有最小高度
+                                 `;
+                                  
+                                 // 从URL中提取文件名并处理URL格式
+                                 let imageUrl = imageData.url || '';
+                                 // 修复URL格式，确保正确加载
+                                 if (imageUrl && !imageUrl.startsWith('http')) {
+                                     if (!imageUrl.startsWith('/')) {
+                                         imageUrl = '/media/' + imageUrl;
+                                     }
+                                 }
+                                 const fileName = imageUrl ? imageUrl.substring(imageUrl.lastIndexOf('/') + 1) : 'unknown.png';
+                                  
+                                 const card = createStepImageCard( 
+                                     imageData.step, 
+                                     imageUrl, 
+                                     fileName, 
+                                     imageData.description, 
+                                     imageData.id
+                                 ); 
+                                  
+                                 imageContainer.appendChild(card); 
+                                 rowContainer.appendChild(imageContainer); 
+                             }); 
+                             
+                             stepSection.appendChild(rowContainer); 
+                             uploadedImagesContainer.appendChild(stepSection); 
+                         }); 
+                          
+                         // 添加删除事件监听 
+                         document.querySelectorAll('.delete-uploaded-image').forEach(button => { 
+                             button.addEventListener('click', function() { 
+                                 const stepNumber = this.getAttribute('data-step'); 
+                                 const imageId = this.getAttribute('data-image-id') || '0'; 
+                                 const filename = this.closest('.step-image-card')?.getAttribute('data-filename'); 
+                                 deleteStepImage(stepNumber, imageId, filename); 
+                             }); 
+                         }); 
+                     }
                     
                     // 更新计数和空状态
                     updateUploadedCount();
@@ -1615,11 +1680,15 @@
                 function setupImageUpload() {
                     const uploadButton = document.getElementById('upload-step-image');
                     const fileInput = document.getElementById('step-image-upload');
+                    const descriptionInput = document.getElementById('step-description');
+                    
+                    // 确保文件输入框支持多选
+                    fileInput.multiple = true;
                     
                     // 添加选择文件后的反馈功能
                     fileInput.addEventListener('change', function() {
                         if (this.files && this.files.length > 0) {
-                            const fileName = this.files[0].name;
+                            const filesCount = this.files.length;
                             let feedbackEl = document.getElementById('file-name-feedback');
                             
                             if (!feedbackEl) {
@@ -1631,24 +1700,50 @@
                                 feedbackEl.style.borderRadius = 'var(--radius-md)';
                                 feedbackEl.style.fontSize = '0.9rem';
                                 feedbackEl.style.color = 'var(--text-secondary)';
-                                feedbackEl.style.display = 'flex';
-                                feedbackEl.style.alignItems = 'center';
-                                
-                                // 添加文件图标
-                                const fileIcon = document.createElement('span');
-                                fileIcon.textContent = '📄 ';
-                                feedbackEl.appendChild(fileIcon);
-                                
-                                // 添加文件名文本
-                                const fileNameText = document.createElement('span');
-                                fileNameText.id = 'selected-file-name';
-                                feedbackEl.appendChild(fileNameText);
                                 
                                 // 插入到文件输入框后面
                                 this.parentNode.insertBefore(feedbackEl, this.nextSibling.nextSibling);
                             }
                             
-                            document.getElementById('selected-file-name').textContent = fileName;
+                            // 清空现有内容
+                            feedbackEl.innerHTML = '';
+                            
+                            // 添加文件图标和标题
+                            const header = document.createElement('div');
+                            header.style.display = 'flex';
+                            header.style.alignItems = 'center';
+                            header.style.marginBottom = '4px';
+                            
+                            const fileIcon = document.createElement('span');
+                            fileIcon.textContent = '📄 ';
+                            header.appendChild(fileIcon);
+                            
+                            const titleText = document.createElement('span');
+                            titleText.textContent = filesCount > 1 ? `已选择 ${filesCount} 个文件：` : '已选择文件：';
+                            titleText.style.fontWeight = '500';
+                            header.appendChild(titleText);
+                            
+                            feedbackEl.appendChild(header);
+                            
+                            // 创建文件列表
+                            const fileList = document.createElement('ul');
+                            fileList.style.listStyleType = 'none';
+                            fileList.style.padding = '0';
+                            fileList.style.margin = '0 0 0 20px';
+                            
+                            // 添加每个文件到列表
+                            for (let i = 0; i < filesCount; i++) {
+                                const listItem = document.createElement('li');
+                                listItem.style.margin = '2px 0';
+                                listItem.style.padding = '2px 0';
+                                listItem.style.whiteSpace = 'nowrap';
+                                listItem.style.overflow = 'hidden';
+                                listItem.style.textOverflow = 'ellipsis';
+                                listItem.textContent = this.files[i].name;
+                                fileList.appendChild(listItem);
+                            }
+                            
+                            feedbackEl.appendChild(fileList);
                         } else {
                             // 如果没有选择文件，移除反馈元素
                             const feedbackEl = document.getElementById('file-name-feedback');
@@ -1659,7 +1754,6 @@
                     });
                     
                     uploadButton.addEventListener('click', function() {
-                        const descriptionInput = document.getElementById('step-description');
                         const stepSelect = document.getElementById('step-select');
                         
                         if (!stepSelect.value) {
@@ -1673,94 +1767,161 @@
                         }
                         
                         const stepNumber = stepSelect.value;
-                        const file = fileInput.files[0];
                         const description = descriptionInput.value || '无描述';
+                        const files = Array.from(fileInput.files);
                         
                         // 检查该步骤的图片数量，确保不超过3张
                         const existingImages = document.querySelectorAll(`.step-image-card[data-step="${stepNumber}"]`);
-                        if (existingImages.length >= 3) {
+                        const remainingSlots = 3 - existingImages.length;
+                        
+                        if (remainingSlots <= 0) {
                             showMessage('每个步骤最多只能上传3张图片', 'error');
                             return;
                         }
                         
-                        // 创建图片预览，这里改缩略图？
-                        const imageContainer = document.createElement('div');
-                        imageContainer.className = 'col-6 col-sm-4 col-md-3';
+                        // 如果选择的文件数量超过剩余槽位，只处理部分文件
+                        const filesToProcess = files.slice(0, remainingSlots);
                         
-                        // 首先创建一个加载中的占位符
-                        imageContainer.innerHTML = `
-                            <div style="
-                                background: var(--card-bg);
-                                border: 1px solid var(--border-color);
-                                border-radius: var(--radius-md);
-                                box-shadow: var(--shadow-sm);
-                                overflow: hidden;
-                                padding: 1rem;
-                                text-align: center;
-                            ">
-                                <div class="spinner-border" role="status" style="margin-bottom: 0.75rem;">
-                                    <span class="sr-only">加载中...</span>
-                                </div>
-                                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
-                                    正在处理图片...
-                                </p>
-                            </div>
-                        `;
-                        
-                        // 添加到容器
-                        const container = document.getElementById('uploaded-step-images');
-                        container.appendChild(imageContainer);
-                        updateUploadedCount();
-                        
-                        // 读取图片文件并创建预览
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            // 移除加载占位符
-                            imageContainer.innerHTML = '';
-                            
-                            // 为每个图片生成唯一ID
-                            const imageId = Date.now();
-                        
-                        // 创建并添加图片卡片
-                        const card = createStepImageCard(stepNumber, e.target.result, file.name, description, imageId);
-                        // 存储文件信息到卡片元素，方便保存时处理
-                        card.setAttribute('data-step', stepNumber);
-                        card.setAttribute('data-image-id', imageId);
-                        card.setAttribute('data-filename', file.name);
-                        card.setAttribute('data-description', description);
-                        imageContainer.appendChild(card);
-                        
-                        // 将图片信息添加到待上传队列
-                        window.pendingUploads.push({
-                            step: stepNumber,
-                            file: file,
-                            description: description,
-                            imageId: imageId
-                        });
-                        
-                        // 添加删除事件监听
-                        const deleteBtn = card.querySelector('.delete-uploaded-image');
-                        deleteBtn.addEventListener('click', function() {
-                            const btnStepNumber = this.getAttribute('data-step');
-                            const btnImageId = this.getAttribute('data-image-id');
-                            deleteStepImage(btnStepNumber, btnImageId);
-                        });
-                        };
-                        reader.readAsDataURL(file);
-                        
-                        // 清除表单
-                        fileInput.value = '';
-                        descriptionInput.value = '';
-                        
-                        // 重置上传区域样式
-                        const uploadArea = fileInput.nextElementSibling;
-                        if (uploadArea) {
-                            uploadArea.style.borderColor = 'var(--border-color)';
-                            uploadArea.style.backgroundColor = 'var(--bg-color)';
+                        if (files.length > remainingSlots) {
+                            showMessage(`该步骤只剩${remainingSlots}个图片槽位，已自动调整为上传${remainingSlots}张图片`, 'warning');
                         }
                         
-                        showMessage('图片已添加到上传队列', 'success');
+                        // 批量处理文件
+                        processBatchImages(filesToProcess, stepNumber, description);
                     });
+                    
+                    // 批量处理图片上传
+                    function processBatchImages(files, stepNumber, description) {
+                        const container = document.getElementById('uploaded-step-images');
+                        let processedCount = 0;
+                        
+                        files.forEach((file, index) => {
+                            // 创建图片预览容器
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'col-6 col-sm-4 col-md-3';
+                            
+                            // 首先创建一个加载中的占位符
+                            imageContainer.innerHTML = `
+                                <div style="
+                                    background: var(--card-bg);
+                                    border: 1px solid var(--border-color);
+                                    border-radius: var(--radius-md);
+                                    box-shadow: var(--shadow-sm);
+                                    overflow: hidden;
+                                    padding: 1rem;
+                                    text-align: center;
+                                ">
+                                    <div class="spinner-border" role="status" style="margin-bottom: 0.75rem;">
+                                        <span class="sr-only">加载中...</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                        正在处理图片 ${index + 1}/${files.length}...
+                                    </p>
+                                </div>
+                            `;
+                            
+                            // 添加到容器
+                            container.appendChild(imageContainer);
+                            updateUploadedCount();
+                            
+                            // 读取图片文件并创建预览
+                            const reader = new FileReader();
+                            reader.file = file;
+                            reader.index = index;
+                            
+                            reader.onload = function(e) {
+                                // 移除加载占位符
+                                imageContainer.innerHTML = '';
+                                
+                                // 为每个图片生成唯一ID
+                                const imageId = Date.now() + '_' + this.index;
+                            
+                                // 创建并添加图片卡片
+                                const card = createStepImageCard(stepNumber, e.target.result, this.file.name, description, imageId);
+                                // 存储文件信息到卡片元素，方便保存时处理
+                                card.setAttribute('data-step', stepNumber);
+                                card.setAttribute('data-image-id', imageId);
+                                card.setAttribute('data-filename', this.file.name);
+                                card.setAttribute('data-description', description);
+                                imageContainer.appendChild(card);
+                                
+                                // 将图片信息添加到待上传队列
+                                window.pendingUploads.push({
+                                    step: stepNumber,
+                                    file: this.file,
+                                    description: description,
+                                    imageId: imageId
+                                });
+                                
+                                // 添加删除事件监听
+                                const deleteBtn = card.querySelector('.delete-uploaded-image');
+                                deleteBtn.addEventListener('click', function() {
+                                    const btnStepNumber = this.getAttribute('data-step');
+                                    const btnImageId = this.getAttribute('data-image-id');
+                                    deleteStepImage(btnStepNumber, btnImageId);
+                                });
+                                
+                                processedCount++;
+                                
+                                // 当所有文件都处理完成时
+                                if (processedCount === files.length) {
+                                    // 清空文件输入
+                                    fileInput.value = '';
+                                    descriptionInput.value = '';
+                                    
+                                    // 移除文件名反馈
+                                    const feedbackEl = document.getElementById('file-name-feedback');
+                                    if (feedbackEl) {
+                                        feedbackEl.remove();
+                                    }
+                                    
+                                    // 重置上传区域样式
+                                    const uploadArea = fileInput.nextElementSibling;
+                                    if (uploadArea) {
+                                        uploadArea.style.borderColor = 'var(--border-color)';
+                                        uploadArea.style.backgroundColor = 'var(--bg-color)';
+                                    }
+                                    
+                                    showMessage(`成功添加 ${processedCount} 张图片`, 'success');
+                                }
+                            };
+                            
+                            reader.onerror = function() {
+                                processedCount++;
+                                imageContainer.innerHTML = `
+                                    <div style="
+                                        background: var(--card-bg);
+                                        border: 1px solid var(--border-color);
+                                        border-radius: var(--radius-md);
+                                        box-shadow: var(--shadow-sm);
+                                        overflow: hidden;
+                                        padding: 1rem;
+                                        text-align: center;
+                                    ">
+                                        <div style="margin-bottom: 0.75rem; color: #dc3545;">
+                                            ❌
+                                        </div>
+                                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                                            图片处理失败
+                                        </p>
+                                    </div>
+                                `;
+                                
+                                if (processedCount === files.length) {
+                                    fileInput.value = '';
+                                    descriptionInput.value = '';
+                                    
+                                    // 移除文件名反馈
+                                    const feedbackEl = document.getElementById('file-name-feedback');
+                                    if (feedbackEl) {
+                                        feedbackEl.remove();
+                                    }
+                                }
+                            };
+                            
+                            reader.readAsDataURL(file);
+                        });
+                    }
                     
                     // 文件拖放效果
                     const uploadArea = fileInput.nextElementSibling;
@@ -2333,6 +2494,11 @@
                     const modal = createSimpleModal();
                     let currentStep = 0;
                     let currentImageIndex = 0; // 跟踪当前步骤中的图片索引
+                    // 图片缩放相关变量 - 提前初始化
+                    let currentZoom = 1;
+                    let isDragging = false;
+                    let startX, startY, translateX = 0, translateY = 0;
+                    let imgElement = null;
                     
                     // 初始化：如果第一个步骤没有图片，自动跳转到有图片的步骤
                     while (currentStep < steps.length && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
@@ -2343,10 +2509,15 @@
                     updateStepDisplay(currentStep);
                     updateButtonStates();
                     
+                    // 添加激光笔功能
+                    setupLaserPointer(modal);
+                    
                     // 模态框事件处理
                     function closeModal() {
                         modal.style.display = 'none';
                         document.body.style.overflow = 'auto';
+                        // 移除激光笔相关元素和事件
+                        removeLaserPointer();
                     }
                     
                     function goToPrevStep() {
@@ -2393,79 +2564,218 @@
                     
                     function updateStepDisplay(index) {
                         const step = steps[index];
-                        const container = modal.querySelector('#browse-content');
+                        const mainSlideArea = modal.querySelector('#main-slide-area');
                         const indicator = modal.querySelector('#step-indicator');
                         
-                        // 重置当前步骤的图片索引
-                        const hasImages = step.imageUrls && step.imageUrls.length > 0;
-                        if (hasImages) {
-                            // 确保图片索引有效
-                            currentImageIndex = Math.min(currentImageIndex, step.imageUrls.length - 1);
-                            // 更新指示器
-                            indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
-                        } else {
-                            indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                        // 确保必要的元素存在
+                        if (!mainSlideArea) {
+                            console.error('未找到主幻灯片区域');
+                            return;
                         }
                         
-                        // 清空并创建内容
-                        container.innerHTML = '';
+                        // 重置当前步骤的图片索引和缩放状态
+                        const hasImages = step.imageUrls && step.imageUrls.length > 0;
+                        if (indicator) {
+                            if (hasImages) {
+                                // 确保图片索引有效
+                                currentImageIndex = Math.min(currentImageIndex, step.imageUrls.length - 1);
+                                // 更新指示器
+                                indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                            } else {
+                                indicator.textContent = `步骤 ${step.number} / ${steps.length}`;
+                            }
+                        }
                         
+                        // 重置缩放和拖拽状态
+                        currentZoom = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        isDragging = false;
+                        
+                        // 更新主幻灯片区域
+                        mainSlideArea.innerHTML = '';
+                        
+                        // 使用flex布局让内容自适应整个可用空间
                         const content = document.createElement('div');
+                        content.style.display = 'flex';
+                        content.style.flexDirection = 'column';
+                        content.style.width = '100%';
+                        content.style.height = '100%';
                         content.style.textAlign = 'center';
                         content.style.color = 'white';
-                        content.style.maxWidth = '1000px';
-                        content.style.margin = '0 auto';
+                        content.style.padding = '10px';
                         
-                        // 步骤标题
-                        const title = document.createElement('h2');
-                        title.textContent = `步骤 ${step.number}`;
-                        title.style.marginBottom = '20px';
-                        content.appendChild(title);
-                        
-                        // 步骤文本
+                                                
+                        // 步骤文本 - 精简显示
                         const text = document.createElement('div');
                         text.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
                         text.style.color = '#333';
-                        text.style.padding = '20px';
-                        text.style.borderRadius = '10px';
-                        text.style.maxWidth = '800px';
-                        text.style.margin = '0 auto 20px';
-                        text.style.fontSize = '1.1rem';
+                        text.style.padding = '10px';
+                        text.style.borderRadius = '6px';
+                        text.style.margin = '0 auto 10px';
+                        text.style.fontSize = '0.9rem';
+                        text.style.maxWidth = '95%';
+                        text.style.maxHeight = '60px';
+                        text.style.overflow = 'hidden';
+                        text.style.textOverflow = 'ellipsis';
+                        text.style.display = '-webkit-box';
+                        text.style.webkitLineClamp = '2';
+                        text.style.webkitBoxOrient = 'vertical';
                         text.textContent = step.text;
                         content.appendChild(text);
                         
-                        // 步骤图片 - 单张显示，支持图片切换
+                        // 图片容器 - 最大化利用空间
+                        const imgContainer = document.createElement('div');
+                        imgContainer.style.display = 'flex';
+                        imgContainer.style.flex = '1';
+                        imgContainer.style.justifyContent = 'center';
+                        imgContainer.style.alignItems = 'center';
+                        imgContainer.style.marginTop = '5px';
+                        imgContainer.style.position = 'relative';
+                        imgContainer.style.overflow = 'hidden';
+                        
+                        // 图片包装器 - 用于缩放和拖拽
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.style.position = 'relative';
+                        imgWrapper.style.transition = 'transform 0.2s ease';
+                        
+                        // 步骤图片 - 单张显示，支持图片切换和缩放
                         if (step.imageUrls && step.imageUrls.length > 0) {
-                            // 创建图片容器
-                            const imgContainer = document.createElement('div');
-                            imgContainer.style.textAlign = 'center';
-                            imgContainer.style.marginTop = '20px';
-                            
                             // 显示当前图片
-                            const img = document.createElement('img');
-                            img.src = step.imageUrls[currentImageIndex];
-                            img.alt = `步骤 ${step.number} 图片`;
-                            img.style.maxWidth = '100%';
-                            img.style.maxHeight = '500px';
-                            img.style.borderRadius = '8px';
-                            img.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
-                            imgContainer.appendChild(img);
+                            imgElement = document.createElement('img');
+                            imgElement.src = step.imageUrls[currentImageIndex];
+                            imgElement.alt = `步骤 ${step.number} 图片`;
+                            imgElement.style.maxWidth = '100%';
+                            imgElement.style.maxHeight = '100%';
+                            imgElement.style.objectFit = 'contain';
+                            imgElement.draggable = false; /* 禁用图片拖动 */
+                            imgElement.style.userSelect = 'none'; /* 禁用文本选择 */
+                            
+                            // 添加缩放和拖拽事件
+                            setupImageZoomAndDrag(imgElement, imgWrapper);
+                            
+                            imgWrapper.appendChild(imgElement);
+                            imgContainer.appendChild(imgWrapper);
                             
                             // 如果有多个图片，显示图片导航信息
                             if (step.imageUrls.length > 1) {
                                 const imgNavInfo = document.createElement('div');
                                 imgNavInfo.style.color = 'white';
-                                imgNavInfo.style.marginTop = '10px';
+                                imgNavInfo.style.marginTop = '5px';
                                 imgNavInfo.style.fontSize = '0.9rem';
                                 imgNavInfo.style.opacity = '0.8';
                                 imgNavInfo.textContent = `图片 ${currentImageIndex + 1} / ${step.imageUrls.length}`;
-                                imgContainer.appendChild(imgNavInfo);
+                                content.appendChild(imgNavInfo);
                             }
-                            
-                            content.appendChild(imgContainer);
+                        } else {
+                            // 如果没有图片，显示提示信息
+                            const noImageMsg = document.createElement('div');
+                            noImageMsg.style.display = 'flex';
+                            noImageMsg.style.alignItems = 'center';
+                            noImageMsg.style.justifyContent = 'center';
+                            noImageMsg.style.width = '100%';
+                            noImageMsg.style.height = '100%';
+                            noImageMsg.style.fontSize = '1rem';
+                            noImageMsg.style.opacity = '0.6';
+                            noImageMsg.textContent = '无图片';
+                            imgContainer.appendChild(noImageMsg);
                         }
                         
-                        container.appendChild(content);
+                        content.appendChild(imgContainer);
+                        mainSlideArea.appendChild(content);
+                        
+                        // 更新缩略图导航
+                        updateSlideThumbnails();
+                    }
+                    
+                    // 设置图片缩放和拖拽功能
+                    function setupImageZoomAndDrag(img, wrapper) {
+                        // 缩放功能
+                        img.addEventListener('wheel', function(e) {
+                            e.preventDefault();
+                            
+                            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                            const newZoom = currentZoom + delta;
+                            
+                            // 限制缩放范围
+                            if (newZoom > 0.1 && newZoom < 5) {
+                                currentZoom = newZoom;
+                                updateImageTransform(wrapper);
+                            }
+                        });
+                        
+                        // 拖拽功能
+                        img.addEventListener('mousedown', function(e) {
+                            // 移除只有在放大后才能拖拽的限制
+                            isDragging = true;
+                            startX = e.clientX - translateX;
+                            startY = e.clientY - translateY;
+                            e.preventDefault(); // 阻止默认的拖动行为，防止复制图片
+                        });
+                        
+                        document.addEventListener('mousemove', function(e) {
+                            if (isDragging) {
+                                translateX = e.clientX - startX;
+                                translateY = e.clientY - startY;
+                                updateImageTransform(wrapper);
+                            }
+                        });
+                        
+                        document.addEventListener('mouseup', function() {
+                            isDragging = false;
+                        });
+                    }
+                    
+                    // 更新图片变换
+                    function updateImageTransform(wrapper) {
+                        wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+                    }
+                    
+                    // 重置缩放
+                    function resetZoom() {
+                        currentZoom = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        const wrapper = imgElement ? imgElement.parentNode : null;
+                        if (wrapper) {
+                            updateImageTransform(wrapper);
+                        }
+                    }
+                    
+                    // 更新缩略图导航
+                    function updateSlideThumbnails() {
+                        const slideThumbnails = modal.querySelector('#slide-thumbnails');
+                        slideThumbnails.innerHTML = '';
+                        
+                        steps.forEach((step, index) => {
+                            const thumbnail = document.createElement('div');
+                            thumbnail.style.cssText = `
+                                padding: 10px 15px;
+                                background-color: ${index === currentStep ? '#4a9eff' : '#333'};
+                                border-radius: 4px;
+                                cursor: pointer;
+                                transition: background-color 0.2s;
+                                font-size: 0.9rem;
+                                text-align: center;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                height: 50px;
+                                min-width: 100px;
+                                color: white; /* 确保文本颜色为白色，在深色背景上可见 */
+                            `;
+                            
+                            thumbnail.textContent = `步骤 ${step.number}`;
+                            
+                            thumbnail.addEventListener('click', () => {
+                                currentStep = index;
+                                currentImageIndex = 0;
+                                updateStepDisplay(currentStep);
+                                updateButtonStates();
+                            });
+                            
+                            slideThumbnails.appendChild(thumbnail);
+                        });
                     }
                     
                     function updateButtonStates() {
@@ -2483,9 +2793,13 @@
                     }
                     
                     // 绑定事件监听器
-                    modal.querySelector('#close-modal').addEventListener('click', closeModal);
-                    modal.querySelector('#prev-step').addEventListener('click', goToPrevStep);
-                    modal.querySelector('#next-step').addEventListener('click', goToNextStep);
+                    const closeModalBtn = modal.querySelector('#close-modal');
+                    const prevStepBtn = modal.querySelector('#prev-step');
+                    const nextStepBtn = modal.querySelector('#next-step');
+                    
+                    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+                    if (prevStepBtn) prevStepBtn.addEventListener('click', goToPrevStep);
+                    if (nextStepBtn) nextStepBtn.addEventListener('click', goToNextStep);
                     
                     // 键盘事件
                     const handleKeydown = function(e) {
@@ -2508,6 +2822,37 @@
                     // 显示模态框
                     modal.style.display = 'block';
                     document.body.style.overflow = 'hidden';
+                    
+                    // 添加缩放控制按钮事件监听
+                    const zoomInBtn = modal.querySelector('#zoom-in');
+                    const zoomOutBtn = modal.querySelector('#zoom-out');
+                    const resetZoomBtn = modal.querySelector('#reset-zoom');
+                    
+                    if (zoomInBtn) {
+                        zoomInBtn.addEventListener('click', () => {
+                            if (currentZoom < 5) {
+                                currentZoom += 0.2;
+                                const wrapper = imgElement ? imgElement.parentNode : null;
+                                if (wrapper) {
+                                    updateImageTransform(wrapper);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (zoomOutBtn) {
+                        zoomOutBtn.addEventListener('click', () => {
+                            if (currentZoom > 0.2) {
+                                currentZoom -= 0.2;
+                                const wrapper = imgElement ? imgElement.parentNode : null;
+                                if (wrapper) {
+                                    updateImageTransform(wrapper);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (resetZoomBtn) resetZoomBtn.addEventListener('click', resetZoom);
                 });
                 
                 // 创建简化的模态框
@@ -2525,6 +2870,7 @@
                         z-index: 9999;
                         font-family: Arial, sans-serif;
                         overflow: hidden;
+                        cursor: none; /* 隐藏默认光标 */
                     `;
                     
                     // 模态框内容 - 分为头部、内容区和固定底部的控制栏
@@ -2541,6 +2887,7 @@
                             justify-content: space-between;
                             align-items: center;
                             z-index: 10000;
+                            cursor: default; /* 恢复默认光标 */
                         ">
                             <h3 style="color: white; margin: 0;">{{ task.title }} - 实现过程浏览</h3>
                             <div style="display: flex; align-items: center; gap: 15px;">
@@ -2555,7 +2902,7 @@
                             </div>
                         </div>
                         
-                        <!-- 内容区域 - 设置适当的padding以避免被固定的头部和底部遮挡 -->
+                        <!-- 内容区域 - 修改为缩略图左侧布局 -->
                         <div id="browse-content" style="
                             position: absolute;
                             top: 70px;  /* 头部高度+padding */
@@ -2563,12 +2910,93 @@
                             right: 0;
                             bottom: 80px;  /* 底部控制栏高度+padding */
                             display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            padding: 20px;
-                            overflow: auto;
+                            overflow: hidden;
+                            background-color: #1a1a1a;
                         ">
-                            <!-- 内容将动态加载 -->
+                            <!-- 缩略图导航区域 - 移至左侧 -->
+                            <div id="slide-thumbnails-container" style="
+                                width: 180px;
+                                background-color: #333;
+                                padding: 10px;
+                                border-right: 1px solid #555;
+                                overflow-y: auto;
+                                overflow-x: hidden;
+                                flex-shrink: 0;
+                            ">
+                                <div id="slide-thumbnails" style="
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 10px;
+                                ">
+                                    <!-- 缩略图将动态生成 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 主图片显示区域 - 最大化利用空间 -->
+                            <div id="main-slide-area" style="
+                                flex: 1;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                background-color: #000;
+                                overflow: hidden;
+                                position: relative;
+                            ">
+                                <!-- 主内容将动态加载 -->
+                                <!-- 缩放控制按钮 -->
+                                <div id="zoom-controls" style="
+                                    position: absolute;
+                                    bottom: 20px;
+                                    right: 20px;
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 10px;
+                                    z-index: 10;
+                                ">
+                                    <button id="zoom-in" class="btn btn-light" style="
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 18px;
+                                        padding: 0;
+                                        background-color: rgba(255, 255, 255, 0.9);
+                                        color: #333;
+                                        border: none;
+                                        cursor: pointer;
+                                    ">+</button>
+                                    <button id="zoom-out" class="btn btn-light" style="
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 18px;
+                                        padding: 0;
+                                        background-color: rgba(255, 255, 255, 0.9);
+                                        color: #333;
+                                        border: none;
+                                        cursor: pointer;
+                                    ">-</button>
+                                    <button id="reset-zoom" class="btn btn-light" style="
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 14px;
+                                        padding: 0;
+                                        background-color: rgba(255, 255, 255, 0.9);
+                                        color: #333;
+                                        border: none;
+                                        cursor: pointer;
+                                    ">⟳</button>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- 底部控制栏 - 固定在最底部 -->
@@ -2584,6 +3012,7 @@
                             align-items: center;
                             gap: 20px;
                             z-index: 10000;
+                            cursor: default; /* 恢复默认光标 */
                         ">
                             <button id="prev-step" style="
                                 padding: 10px 20px;
@@ -2591,7 +3020,7 @@
                                 color: white;
                                 border: none;
                                 border-radius: 5px;
-                                cursor: not-allowed;
+                                cursor: pointer;
                                 opacity: 0.5;
                             ">上一步</button>
                             
@@ -2630,6 +3059,60 @@
                     });
                     
                     return steps;
+                }
+                
+                // 设置激光笔功能
+                function setupLaserPointer(modal) {
+                    // 创建激光笔元素
+                    const laserPointer = document.createElement('div');
+                    laserPointer.id = 'laser-pointer';
+                    laserPointer.style.cssText = `
+                        position: fixed;
+                        width: 15px;
+                        height: 15px;
+                        background: radial-gradient(circle, #ff0 0%, #ff8c00 70%, transparent 100%);
+                        border-radius: 50%;
+                        pointer-events: none;
+                        z-index: 10001;
+                        box-shadow: 0 0 20px 5px #ff0;
+                        transform: translate(-50%, -50%);
+                        transition: transform 0.05s ease-out;
+                    `;
+                    document.body.appendChild(laserPointer);
+                    
+                    // 鼠标移动事件处理
+                    function moveLaserPointer(e) {
+                        laserPointer.style.left = e.clientX + 'px';
+                        laserPointer.style.top = e.clientY + 'px';
+                    }
+                    
+                    // 添加鼠标移动事件监听
+                    modal.addEventListener('mousemove', moveLaserPointer);
+                    
+                    // 鼠标离开模态框时隐藏激光笔
+                    modal.addEventListener('mouseleave', function() {
+                        laserPointer.style.opacity = '0';
+                    });
+                    
+                    // 鼠标进入模态框时显示激光笔
+                    modal.addEventListener('mouseenter', function() {
+                        laserPointer.style.opacity = '1';
+                    });
+                    
+                    // 保存引用以便后续清理
+                    modal._laserPointer = laserPointer;
+                    modal._moveLaserPointer = moveLaserPointer;
+                }
+                
+                // 移除激光笔功能
+                function removeLaserPointer() {
+                    const modal = document.getElementById('simpleBrowseModal');
+                    if (modal && modal._laserPointer) {
+                        modal.removeEventListener('mousemove', modal._moveLaserPointer);
+                        document.body.removeChild(modal._laserPointer);
+                        delete modal._laserPointer;
+                        delete modal._moveLaserPointer;
+                    }
                 }
             }
         });

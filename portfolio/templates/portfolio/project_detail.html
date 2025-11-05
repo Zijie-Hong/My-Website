@@ -6,27 +6,28 @@
 
 {% block content %}
 <style>
-    /* CSS变量定义 */
-    :root {
-        --primary-color: #4361ee;
-        --primary-light: #4895ef;
-        --secondary-color: #3a0ca3;
-        --success-color: #4cc9f0;
-        --warning-color: #f72585;
-        --bg-color: #f8f9fa;
-        --bg-light: #f1f3f5;
-        --card-bg: #ffffff;
-        --text-primary: #212529;
-        --text-secondary: #6c757d;
-        --border-color: #e9ecef;
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
-        --radius-sm: 6px;
-        --radius-md: 8px;
-        --radius-lg: 12px;
-        --transition: all 0.3s ease;
-    }
+        /* CSS变量定义 - 可靠自信的紫色到蓝色过渡主题 */
+        :root {
+            --primary-color: #6a1b9a;          /* 深紫色 - 可靠、自信 */
+            --primary-light: #9c27b0;          /* 中紫色 */
+            --secondary-color: #3f51b5;        /* 深蓝色 - 专业过渡 */
+            --success-color: #2e7d32;          /* 深绿色 - 专业成功状态 */
+            --warning-color: #f57c00;          /* 深橙色 - 专业警告状态 */
+            --danger-color: #c62828;           /* 深红色 - 专业错误状态 */
+            --bg-color: #e3f2fd;              /* 浅蓝色背景 - 柔和基调 */
+            --bg-light: #e3f2fd;
+            --card-bg: #ffffff;
+            --text-primary: #263238;           /* 深色文本 - 专业可读性 */
+            --text-secondary: #607d8b;         /* 中度灰色 - 辅助文本 */
+            --border-color: #b0bec5;           /* 浅灰色边框 - 专业分隔 */
+            --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.18);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.3s ease;
+        }
     
     /* 全局样式优化 */
     .container {
@@ -239,7 +240,7 @@
     }
     
     .task-item {
-        background: var(--bg-color);
+        background: #ffffff; 
         border-radius: var(--radius-md);
         padding: 1.25rem;
         border-left: 4px solid #ccc;

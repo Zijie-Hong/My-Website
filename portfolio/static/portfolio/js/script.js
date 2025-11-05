@@ -10,15 +10,17 @@ if (menuToggle && mobileNav) {
 }
 
 // 点击移动导航链接后关闭菜单
-const mobileLinks = mobileNav.querySelectorAll('a');
-mobileLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        mobileNav.style.display = 'none';
-        if (menuToggle) {
-            menuToggle.textContent = '☰';
-        }
+if (mobileNav) {
+    const mobileLinks = mobileNav.querySelectorAll('a');
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            mobileNav.style.display = 'none';
+            if (menuToggle) {
+                menuToggle.textContent = '☰';
+            }
+        });
     });
-});
+}
 
 // 页面滚动时导航栏样式变化
 window.addEventListener('scroll', () => {
@@ -138,11 +140,8 @@ window.addEventListener('load', () => {
     // 添加页面加载完成的类
     document.body.classList.add('loaded');
     
-    // 为各个部分添加渐入动画
-    const sections = document.querySelectorAll('section');
-    sections.forEach(section => {
-        section.classList.add('fade-in-up');
-    });
+    // 移除页面切换时的渐变过渡效果
+    // 不再为section元素添加fade-in-up类
 });
 
 // 技术筛选功能增强

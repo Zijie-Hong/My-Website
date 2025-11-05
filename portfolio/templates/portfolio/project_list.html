@@ -1,6 +1,5 @@
 {% extends 'portfolio/base.html' %}
 {% load static %}
-{% load portfolio_filters %}
 
 {% block title %}项目列表 - 我的作品集{% endblock %}
 
@@ -9,50 +8,16 @@
         <div class="container">
             <h1 class="section-title">项目列表</h1>
             
-            <!-- 筛选器 -->
-            <div class="filter-container">
-                <h3 class="filter-title">按类别或技术筛选</h3>
-                <div class="filter-options">
-                    <div class="filter-group">
-                        <label for="category-filter">项目类别</label>
-                        <select id="category-filter" class="filter-select">
-                            <option value="">全部类别</option>
-                            {% for category in categories %}
-                            <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="technology-filter">技术栈</label>
-                        <select id="technology-filter" class="filter-select">
-                            <option value="">全部技术</option>
-                            {% for tech in technologies %}
-                            <option value="{{ tech }}" {% if selected_technology == tech %}selected{% endif %}>{{ tech }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
             <!-- 项目列表 -->
             {% if projects %}
             <div class="projects-grid">
                 {% for project in projects %}
-                <div class="project-card fade-in-up">
-                    <div class="project-image">
-                        <span>{{ project.title }}</span>
-                    </div>
+                <div class="project-card">
                     <div class="project-content">
-                        <span class="project-category">{{ project.category }}</span>
-                        <h3 class="project-title"><a href="{% url 'project_detail' project.id %}">{{ project.title }}</a></h3>
+                        <h3 class="project-title"><a href="{% url 'project_detail' project.id %}">{{ project.name }}</a></h3>
                         <p class="project-description">{{ project.description|truncatewords:30 }}</p>
-                        <div class="project-tech">
-                            {% for tech in project.technology|split:", " %}
-                            <span class="tech-badge">{{ tech }}</span>
-                            {% endfor %}
-                        </div>
                         <div class="project-meta">
-                            <span class="project-date">{{ project.date }}</span>
+                            <span class="task-count">任务数: {{ project.tasks|length }}</span>
                             <a href="{% url 'project_detail' project.id %}" class="btn btn-small">查看详情</a>
                         </div>
                     </div>
@@ -61,9 +26,9 @@
             </div>
             {% else %}
             <div class="no-results">
-                <h3>未找到匹配的项目</h3>
-                <p>请尝试调整筛选条件或查看其他项目</p>
-                <a href="{% url 'task_list' %}" class="btn btn-primary mt-4">查看全部项目</a>
+                <h3>未找到项目</h3>
+                <p>当前没有可用的项目</p>
+                <a href="{% url 'project_list' %}" class="btn btn-primary mt-4">刷新项目列表</a>
             </div>
             {% endif %}
         </div>

@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}个人作品集{% endblock %}</title>
+    <title>{% block title %}任务集{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'portfolio/css/style.css' %}">
     {% block extra_js %}
     {% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- 导航栏 -->
     <header>
         <nav class="navbar">
-            <div class="container">
-                <a href="{% url 'home' %}" class="logo">我的作品集</a>
+            <div class="content-container">
+                <a href="{% url 'home' %}" class="logo">我的任务集</a>
                 <div class="nav-links">
                     <a href="{% url 'home' %}">首页</a>
                     <a href="{% url 'task_list' %}">任务</a>
@@ -35,7 +35,7 @@
     </header>
 
     <!-- 主要内容区域 -->
-    <main class="container">
+    <main class="content-container">
         {% block content %}
         {% endblock %}
     </main>

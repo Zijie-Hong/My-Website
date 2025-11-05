@@ -6,25 +6,27 @@
 
 {% block content %}
 <style>
-    /* CSS变量定义 */
+    /* CSS变量定义 - 可靠自信的紫色到蓝色过渡主题 */
     :root {
-        --primary-color: #4361ee;
-        --primary-light: #4895ef;
-        --secondary-color: #3a0ca3;
-        --success-color: #4cc9f0;
-        --warning-color: #f72585;
-        --bg-color: #f8f9fa;
+        --primary-color: #6a1b9a;          /* 深紫色 - 可靠、自信 */
+        --primary-light: #9c27b0;          /* 中紫色 */
+        --secondary-color: #3f51b5;        /* 深蓝色 - 专业过渡 */
+        --secondary-light: #5c6bc0;        /* 浅蓝色 */
+        --success-color: #4caf50;          /* 绿色 - 成功状态 */
+        --warning-color: #ff9800;          /* 橙色 - 警告状态 */
+        --danger-color: #f44336;           /* 红色 - 错误状态 */
+        --bg-color: #e3f2fd;              /* 浅蓝色背景 */
         --card-bg: #ffffff;
         --text-primary: #212529;
         --text-secondary: #6c757d;
-        --border-color: #e9ecef;
+        --border-color: #e0e0e0;
         --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
         --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
         --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
         --radius-sm: 6px;
         --radius-md: 8px;
         --radius-lg: 12px;
-        --transition: all 0.3s ease;
+        --transition: all 0.2s ease-in-out;
     }
     
     /* 全局样式优化 */
@@ -175,31 +177,94 @@
         font-style: italic;
     }
     
-    /* 进度条样式 */
-    .progress-input-group {
+    /* 进度条样式 - 与新增任务页面一致 */
+    .progress-container {
+        margin-bottom: 1rem;
+    }
+    
+    .progress-label {
         display: flex;
-        align-items: center;
-        gap: 1rem;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
     }
     
-    .progress-input {
-        width: 80px;
-        text-align: center;
+    /* 组合进度条 - 集成显示和调整功能 */
+    .combined-progress {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 16px;
+        cursor: pointer;
     }
     
-    .progress-preview {
-        flex: 1;
-        height: 8px;
-        background: var(--border-color);
-        border-radius: 4px;
-        overflow: hidden;
-    }
-    
-    .progress-preview-bar {
+    .combined-progress-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100%;
+        margin: 0;
+        opacity: 0; /* 隐藏滑块但保留功能 */
+        z-index: 2;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    .combined-progress-track {
+        position: relative;
+        height: 16px;
+        background-color: var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .combined-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-light), var(--primary-color));
+        border-radius: 8px;
+        transition: width 0.2s ease;
+        position: relative;
+    }
+    
+    .combined-progress-fill::after {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: 50%;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
         background: var(--primary-color);
-        border-radius: 4px;
-        transition: width 0.3s ease;
+        transform: translateY(-50%);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+    }
+    
+    .combined-progress:hover .combined-progress-fill::after {
+        transform: translateY(-50%) scale(1.1);
+        background: var(--secondary-color);
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .combined-progress {
+            height: 14px;
+        }
+        
+        .combined-progress-track {
+            height: 14px;
+        }
+        
+        .combined-progress-fill::after {
+            width: 20px;
+            height: 20px;
+            right: -6px;
+        }
     }
     
     /* 面包屑导航样式 */
@@ -281,13 +346,17 @@
                 
                 <div class="form-group">
                     <label for="progress" class="form-label">完成进度</label>
-                    <div class="progress-input-group">
-                        <input type="number" id="progress" name="progress" class="form-input progress-input" 
-                               min="0" max="100" value="{{ task.progress }}" required>
-                        <span>%</span>
-                        <div class="progress-preview">
-                            <div class="progress-preview-bar" style="width: {{ task.progress }}%"></div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>完成度</span>
+                            <span id="progress-value">{{ task.progress }}%</span>
                         </div>
+                        <label class="combined-progress">
+                            <input type="range" id="progress" name="progress" min="0" max="100" step="10" value="{{ task.progress }}" class="combined-progress-input">
+                            <div class="combined-progress-track">
+                                <div id="progress-fill" class="combined-progress-fill" style="width: {{ task.progress }}%"></div>
+                            </div>
+                        </label>
                     </div>
                 </div>
                 
@@ -318,10 +387,25 @@
     </section>
 
     <script>
-        // 进度条实时预览
-        document.getElementById('progress').addEventListener('input', function(e) {
-            const value = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
-            document.querySelector('.progress-preview-bar').style.width = value + '%';
+        // 进度条实时显示和交互 - 与新增任务页面一致
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressSlider = document.getElementById('progress');
+            const progressValue = document.getElementById('progress-value');
+            const progressFill = document.getElementById('progress-fill');
+            
+            if (progressSlider && progressValue && progressFill) {
+                // 初始化进度条位置
+                const initialValue = progressSlider.value;
+                progressValue.textContent = initialValue + '%';
+                progressFill.style.width = initialValue + '%';
+                
+                // 监听滑块输入事件
+                progressSlider.addEventListener('input', function() {
+                    const value = this.value;
+                    progressValue.textContent = value + '%';
+                    progressFill.style.width = value + '%';
+                });
+            }
         });
         
         // 模态框简单控制

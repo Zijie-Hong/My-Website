@@ -195,6 +195,14 @@ def home(request):
         'task_categories': TASK_CATEGORIES
     })
 
+def project_list(request):
+    """项目列表视图"""
+    projects = global_data['projects']
+    return render(request, 'portfolio/project_list.html', {
+        'projects': projects,
+        'task_categories': TASK_CATEGORIES
+    })
+
 def task_list(request, project_id=None):
     """任务列表视图，支持项目筛选和分类筛选"""
     projects = global_data['projects']

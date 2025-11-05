@@ -292,35 +292,23 @@ function setupProcessEditFunctionality() {
             return;
         }
         
+        // 设置文件输入框支持多选
+        fileInput.multiple = true;
+        
         uploadButton.addEventListener('click', handleImageUpload);
         
         // 文件选择变化时的反馈
         fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const fileName = this.files[0].name;
-                console.log('选择了文件:', fileName);
+            if (this.files && this.files.length > 0) {
+                const filesCount = this.files.length;
+                console.log('选择了文件数量:', filesCount);
                 
-                // 显示文件名反馈
-                let feedback = document.getElementById('file-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.id = 'file-feedback';
-                    feedback.style.cssText = `
-                        margin-top: 8px;
-                        padding: 8px 12px;
-                        background-color: #eff6ff;
-                        border-radius: 6px;
-                        font-size: 13px;
-                        color: #1e40af;
-                    `;
-                    this.parentNode.appendChild(feedback);
-                }
-                feedback.textContent = `已选择: ${fileName}`;
+                
             }
         });
     }
     
-    // 处理图片上传 - 支持多文件
+    // 处理图片上传 - 支持多文件并添加进度指示器
     function handleImageUpload() {
         const stepNumber = stepSelect.value;
         const files = fileInput.files;
@@ -338,6 +326,9 @@ function setupProcessEditFunctionality() {
             showMessage('请选择要上传的图片', 'error');
             return;
         }
+        
+        // 显示处理中状态
+        showProgressIndicator();
         
         // 定义验证函数
         function isValidImage(file) {
@@ -359,22 +350,27 @@ function setupProcessEditFunctionality() {
         
         // 计算成功添加的文件数量
         let addedCount = 0;
+        let processedCount = 0;
+        const totalFiles = files.length;
         
         // 处理每个文件
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             
             if (!isValidImage(file)) {
+                processedCount++;
+                updateProgressIndicator(processedCount, totalFiles);
                 continue; // 跳过无效文件
             }
             
             // 创建预览URL
             const reader = new FileReader();
             reader.file = file; // 保存对当前文件的引用
+            reader.index = i;
             
             reader.onload = function(e) {
                 // 添加到待上传列表
-                const pendingId = 'pending_' + Date.now() + Math.random() + '_' + i;
+                const pendingId = 'pending_' + Date.now() + Math.random() + '_' + this.index;
                 pendingUploads.push({
                     id: pendingId,
                     step: stepNumber,
@@ -384,13 +380,19 @@ function setupProcessEditFunctionality() {
                 });
                 
                 addedCount++;
+                processedCount++;
+                updateProgressIndicator(processedCount, totalFiles);
+                
                 console.log('添加到待上传列表:', { fileName: this.file.name, pendingUploadsCount: pendingUploads.length });
                 
                 // 刷新显示
                 displayUploadedStepImages();
                 
                 // 当处理完所有文件后
-                if (addedCount === files.length) {
+                if (processedCount === totalFiles) {
+                    // 隐藏进度指示器
+                    hideProgressIndicator();
+                    
                     // 清空表单
                     fileInput.value = '';
                     stepDescription.value = '';
@@ -406,10 +408,102 @@ function setupProcessEditFunctionality() {
             };
             
             reader.onerror = function() {
+                processedCount++;
+                updateProgressIndicator(processedCount, totalFiles);
                 showMessage(`读取图片 ${file.name} 失败,请重试`, 'error');
+                
+                // 如果所有文件都处理完了
+                if (processedCount === totalFiles) {
+                    hideProgressIndicator();
+                }
             };
             
             reader.readAsDataURL(file);
+        }
+    }
+    
+    // 显示进度指示器
+    function showProgressIndicator() {
+        let indicator = document.getElementById('upload-progress');
+        
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'upload-progress';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 255, 255, 0.95);
+                padding: 24px;
+                border-radius: 8px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 9999;
+                text-align: center;
+                min-width: 250px;
+            `;
+            
+            const progressBar = document.createElement('div');
+            progressBar.id = 'progress-bar';
+            progressBar.style.cssText = `
+                width: 100%;
+                height: 8px;
+                background: #e5e7eb;
+                border-radius: 4px;
+                margin-top: 12px;
+                overflow: hidden;
+            `;
+            
+            const progressFill = document.createElement('div');
+            progressFill.id = 'progress-fill';
+            progressFill.style.cssText = `
+                height: 100%;
+                width: 0%;
+                background: #10b981;
+                transition: width 0.3s ease;
+            `;
+            
+            const progressText = document.createElement('div');
+            progressText.id = 'progress-text';
+            progressText.style.cssText = 'margin-top: 8px; font-size: 14px; color: #4b5563;';
+            progressText.textContent = '处理中...';
+            
+            progressBar.appendChild(progressFill);
+            indicator.appendChild(document.createTextNode('批量上传中'));
+            indicator.appendChild(progressBar);
+            indicator.appendChild(progressText);
+            
+            document.body.appendChild(indicator);
+        } else {
+            // 重置进度条
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').textContent = '处理中...';
+            indicator.style.display = 'block';
+        }
+    }
+    
+    // 更新进度指示器
+    function updateProgressIndicator(current, total) {
+        const percent = Math.round((current / total) * 100);
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        
+        if (progressFill) {
+            progressFill.style.width = `${percent}%`;
+        }
+        
+        if (progressText) {
+            progressText.textContent = `已处理 ${current}/${total} 个文件 (${percent}%)`;
+        }
+    }
+    
+    // 隐藏进度指示器
+    function hideProgressIndicator() {
+        const indicator = document.getElementById('upload-progress');
+        if (indicator) {
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 500);
         }
     }
     

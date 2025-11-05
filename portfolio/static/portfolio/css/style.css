@@ -16,16 +16,37 @@ body {
 /* 容器样式 */
 .container {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    margin: 0;
+    padding: 0 100px;
+    max-width: none; /* 移除最大宽度限制 */
 }
 
-/* 卡片和内容区域样式增强 */
+/* 自适应内容容器 - 完全利用可用空间 */
+.content-container {
+    width: 100%;
+    margin: 0;
+    padding: 0 100px;
+    max-width: none; /* 确保完全利用空间 */
+    box-sizing: border-box;
+}
+
+/* 响应式设计 - 在小屏幕上调整内边距 */
+@media (max-width: 768px) {
+    .container,
+    .content-container {
+        padding: 0 10px;
+    }
+}
+
+/* 卡片和内容区域样式增强 - iOS毛玻璃效果 */
+/* 卡片和内容区域样式增强 - 专业毛玻璃效果 */
 .card, .content-section {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(221, 223, 226, 0.5);
     transition: var(--transition);
     clear: both;
     display: block;
@@ -33,56 +54,131 @@ body {
     box-sizing: border-box;
 }
 
-/* 现代多彩主题颜色变量 - 蓝紫色搭配方案 */
+/* 可靠自信的紫色到蓝色过渡主题 */
 :root {
-    --primary-color: #5a3d8c; /* 主色调：深紫色 */
-    --secondary-color: #4169e1; /* 次要色调：皇家蓝 */
-    --accent-color: #7b68ee; /* 强调色：中板岩蓝 */
-    --tertiary-color: #8a2be2; /* 第三色：蓝紫色 */
-    --dark-blue: #1a237e; /* 深蓝色 */
-    --light-color: #f5f3ff;
+    --primary-color: #6a1b9a; /* 主色调：深紫色 - 可靠、自信 */
+    --primary-light: #9c27b0; /* 中紫色 */
+    --secondary-color: #3f51b5; /* 次要色调：深蓝色 - 专业过渡 */
+    --accent-color: #7986cb; /* 强调色：蓝紫色 */
+    --tertiary-color: #5c6bc0; /* 第三色：浅蓝紫色 */
+    --dark-color: #263238; /* 深色 */
+    --light-color: #e3f2fd;
     --text-color: #333333;
     --text-light: #666666;
     --white: #ffffff;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.12);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --border-radius: 12px;
     --border-radius-sm: 8px;
 }
 
-/* 导航栏样式 - 现代简洁设计 */
+/* 导航栏样式 - 现代设计 */
 header {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--white); /* 纯白色背景 */
     backdrop-filter: blur(10px);
-    box-shadow: var(--shadow);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 1000;
+    transition: all 0.3s ease;
 }
 
-.navbar {
-    padding: 18px 0;
+/* 滚动时导航栏样式增强 */
+header.scrolled {
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
 }
 
-.navbar .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+/* 移除滚动时的特殊颜色处理，使用统一的过渡效果 */
 
+/* 导航栏元素样式 - 现代设计 */
 .logo {
     font-size: 1.8rem;
     font-weight: 800;
     color: var(--primary-color);
     text-decoration: none;
     letter-spacing: -0.5px;
+    transition: color 0.3s ease;
+}
+
+.logo:hover {
+    color: var(--secondary-color);
 }
 
 .nav-links {
     display: flex;
     gap: 30px;
+    align-items: center;
 }
+
+.nav-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+/* 导航链接悬停下划线效果 */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* 活动导航项样式 */
+.nav-links a.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.nav-links a.active::after {
+    width: 100%;
+    background-color: var(--primary-color);
+}
+    color: var(--text-color);
+    transition: none !important;
+}
+
+header.scrolled .nav-links a:hover {
+    color: var(--primary-color);
+    transition: none !important;
+}
+
+.navbar {
+    padding: 18px 0;
+}
+
+.navbar .content-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
 
 .nav-links a {
     color: var(--text-color);
@@ -125,10 +221,13 @@ header {
 
 #mobile-nav {
     display: none;
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 20px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
     border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     position: absolute;
     top: 100%;
     left: 0;
@@ -167,7 +266,7 @@ main {
 
 /* 页脚样式 - 现代简洁设计 */
 footer {
-    background-color: var(--dark-blue);
+    background-color: var(--dark-color);
     color: var(--white);
     padding: 60px 0 30px;
     margin-top: 80px;
@@ -182,7 +281,7 @@ footer::before {
     left: 0;
     right: 0;
     height: 8px;
-    background: linear-gradient(90deg, var(--primary-color), var(--dark-blue));
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
 .footer-content {
@@ -270,15 +369,15 @@ footer::before {
     font-size: 0.9rem;
 }
 
-/* 首页样式 - 现代渐变设计 */
+/* 首页样式 - 专业渐变效果 */
 .hero {
     text-align: center;
     padding: 120px 20px;
-    background: linear-gradient(135deg, #843a72 0%, #ff9155 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: var(--white);
     border-radius: var(--border-radius);
     margin-bottom: 80px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     position: relative;
     overflow: hidden;
 }
@@ -302,6 +401,7 @@ footer::before {
     letter-spacing: -1px;
     position: relative;
     z-index: 1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .hero p {
@@ -312,6 +412,7 @@ footer::before {
     position: relative;
     z-index: 1;
     font-weight: 500;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* 现代按钮样式 */
@@ -414,16 +515,18 @@ footer::before {
 }
 
 .project-card {
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--border-radius);
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
     transition: var(--transition);
     position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .project-card:hover {
@@ -572,14 +675,16 @@ footer::before {
     background: linear-gradient(135deg, var(--dark-blue) 0%, #34495e 100%);
 }
 
-/* 项目列表页样式 - 现代多彩设计 */
+/* 项目列表页样式 - iOS毛玻璃效果 */
 .filter-container {
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     padding: 35px;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
     margin-bottom: 50px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -649,9 +754,12 @@ footer::before {
     text-align: center;
     padding: 80px 20px;
     color: var(--text-light);
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     margin-top: 40px;
 }
 
@@ -682,14 +790,16 @@ footer::before {
     background: linear-gradient(135deg, rgba(132, 58, 114, 0.05) 0%, rgba(255, 145, 85, 0.05) 100%);
 }
 
-/* 项目详情页样式 - 现代多彩设计 */
+/* 项目详情页样式 - iOS毛玻璃效果 */
 .project-detail {
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
     overflow: hidden;
     position: relative;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .project-detail::before {
@@ -838,17 +948,19 @@ footer::before {
     font-weight: 500;
 }
 
-/* 关于页面样式 - 与主网页配色统一 */
+/* 关于页面样式 - iOS毛玻璃效果 */
 .about-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 40px;
     align-items: start;
-    background-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
     padding: 40px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -864,10 +976,13 @@ footer::before {
 }
 
 .about-sidebar {
-    background-color: var(--light-color);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     padding: 30px;
     border-radius: var(--border-radius-sm);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(31, 38, 135, 0.03);
 }
 
 .profile-image {
@@ -1210,7 +1325,8 @@ textarea.form-input {
 }
 
 .fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+    /* 移除页面切换时的渐变过渡效果 */
+    animation: none;
 }
 
 /* 加载动画 */
