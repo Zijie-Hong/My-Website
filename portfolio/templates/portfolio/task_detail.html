@@ -65,7 +65,7 @@
     
     /* 全局样式优化 */
     .container {
-        max-width: 1200px;
+        max-width: None;
         margin: 0 auto;
     }
     
@@ -112,7 +112,7 @@
     
     .task-detail-wrapper {
         display: grid;
-        grid-template-columns: 1fr 350px;
+        grid-template-columns: 1fr 300px;
         gap: 2rem;
     }
     
@@ -214,7 +214,7 @@
     .process-step {
         display: flex;
         margin-bottom: 1.5rem;
-        background-color: var(--card-background);
+        background-color: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: 8px;
         overflow: hidden;
@@ -255,7 +255,7 @@
         width: 120px;
         height: 120px;
         max-width: 100%;
-        background-color: var(--card-background);
+        background-color: var(--card-bg);
         border-radius: 6px;
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -286,7 +286,7 @@
     .step-image-description {
         padding: 0.5rem;
         margin: 0;
-        background-color: var(--background-color);
+        background-color: var(--bg-color);
         font-size: 0.9rem;
         color: var(--text-secondary);
         text-align: center;
@@ -296,64 +296,14 @@
         text-align: center;
         padding: 2rem;
         color: var(--text-secondary);
-        background-color: var(--card-background);
+        background-color: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: 8px;
     }
     
-    /* 编辑模态框样式 */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
+
     
-    .modal.show {
-        display: flex;
-    }
-    
-    .modal-dialog {
-        width: 90%;
-        max-width: 800px;
-        background-color: white;
-        border-radius: 8px;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-    
-    .modal-content {
-        padding: 1.5rem;
-    }
-    
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 1rem;
-    }
-    
-    .modal-body {
-        margin-bottom: 1rem;
-    }
-    
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
-    }
-    
-    /* 优化图片显示 */
+    /* 任务图片样式 */
     .task-image-container {
         margin: 1rem 0;
         padding: 0.5rem;
@@ -365,7 +315,7 @@
     }
     
     .task-image-container:hover {
-        box-shadow: 'var(--shadow-md)';
+        box-shadow: var(--shadow-md);
     }
     
     .task-image {
@@ -379,23 +329,6 @@
     
     .task-image:hover {
         transform: scale(1.02);
-    }
-    
-    /* 任务图片样式 */
-    .task-image-container {
-        margin: 1rem 0;
-        padding: 0.5rem;
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        background: white;
-        text-align: center;
-    }
-    
-    .task-image {
-        max-width: 100%;
-        max-height: 400px;
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-sm);
     }
     
     /* 技术标签 */
@@ -558,15 +491,7 @@
     }
     
     
-    .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--secondary-color);
-        transform: translateY(-1px);
-    }
+
     
     .btn-secondary {
         background-color: var(--border-color);
@@ -610,7 +535,9 @@
         background: white;
         border-radius: var(--radius-lg);
         width: 90%;
-        max-width: 500px;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
     
@@ -725,23 +652,7 @@
         box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
     }
     
-    .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--radius-md);
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        align-self: flex-start;
-    }
-    
-    .btn-primary:hover {
-        background-color: var(--secondary-color);
-        transform: translateY(-1px);
-    }
+
     
     .image-grid {
         display: grid;
@@ -1148,7 +1059,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="modal-footer" style="padding: 1.5rem 2rem; background-color: var(--light-color); border-top: 1px solid var(--card-border); display: flex; gap: 1rem; justify-content: flex-end;">
+                            <div class="modal-footer" style="padding: 1.5rem 2rem; background-color: white; border-top: 1px solid var(--card-border); display: flex; gap: 1rem; justify-content: flex-end;">
                                 <button type="button" class="btn btn-secondary" onclick="closeEditProcessModal()" style="padding: 0.875rem 1.75rem; font-size: 1rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition);">取消</button>
                                 <button type="button" class="btn btn-primary" onclick="saveProcessChanges()" style="padding: 0.875rem 1.75rem; font-size: 1rem; font-weight: 600; border-radius: var(--border-radius); transition: var(--transition); position: relative; overflow: hidden;">
                                     <span>保存修改</span>
@@ -1489,8 +1400,8 @@
                             position: absolute;
                             top: 8px;
                             right: 8px;
-                            background: rgba(255, 255, 255, 0.9);
-                            border: none;
+                            background: rgba(255, 255, 255, 0.95);
+                            border: 2px solid #ff4444;
                             border-radius: 50%;
                             width: 32px; /* 增大按钮尺寸 */
                             height: 32px; /* 增大按钮尺寸 */
@@ -1501,10 +1412,11 @@
                             font-size: 16px; /* 增大图标大小 */
                             font-weight: bold;
                             cursor: pointer;
-                            opacity: 0.9;
-                            transition: all 0.2s;
-                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                        ">
+                            opacity: 0.95;
+                            transition: all 0.2s ease;
+                            box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3);
+                            z-index: 10;
+                        " onmouseenter="this.style.backgroundColor='#ff4444'; this.style.color='white'; this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 8px rgba(255, 68, 68, 0.5);'" onmouseleave="this.style.backgroundColor='rgba(255, 255, 255, 0.95)'; this.style.color='#ff4444'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 6px rgba(255, 68, 68, 0.3);'" onclick="this.style.transform='scale(0.95) rotate(15deg)'; setTimeout(()=>{this.style.transform='scale(1)'}, 200);">
                             ×
                         </button>
                     </div>
@@ -1528,6 +1440,67 @@
                 });
                 
                 return card;
+            }
+            
+            // 显示消息提示
+            function showMessage(message, type = 'info') {
+                // 移除已存在的消息
+                const existingMessage = document.getElementById('temp-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                // 创建消息元素
+                const messageEl = document.createElement('div');
+                messageEl.id = 'temp-message';
+                
+                // 设置样式
+                const bgColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background-color: ${bgColor};
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1000;
+                    animation: slideInRight 0.3s ease-out;
+                    font-size: 14px;
+                    font-weight: 500;
+                `;
+                
+                messageEl.textContent = message;
+                
+                // 添加到文档
+                document.body.appendChild(messageEl);
+                
+                // 添加动画样式
+                if (!document.getElementById('message-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'message-animation';
+                    style.textContent = `
+                        @keyframes slideInRight {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    messageEl.style.transition = 'all 0.3s ease';
+                    messageEl.style.opacity = '0';
+                    messageEl.style.transform = 'translateX(100%)';
+                    
+                    setTimeout(() => {
+                        if (messageEl.parentNode) {
+                            messageEl.parentNode.removeChild(messageEl);
+                        }
+                    }, 300);
+                }, 3000);
             }
                 
                 // 显示已上传的步骤图片
@@ -1656,21 +1629,88 @@
                     console.log(`已添加删除标识: ${deleteKey}`);
                     console.log(`当前删除列表:`, Array.from(window.imagesToDelete));
                     
-                    // 安全地移除对应的卡片
-                    try {
-                        const deleteButtons = document.querySelectorAll(`.delete-uploaded-image[data-step="${stepNumber}"][data-image-id="${imageId}"]`);
-                        if (deleteButtons.length > 0) {
-                            const cardContainer = deleteButtons[0].closest('.col-12, .col-sm-6, .col-lg-4');
-                            if (cardContainer) {
-                                cardContainer.remove();
+                    // 获取对应的删除按钮和卡片
+                    const deleteButtons = document.querySelectorAll(`.delete-uploaded-image[data-step="${stepNumber}"][data-image-id="${imageId}"]`);
+                    if (deleteButtons.length > 0) {
+                        const deleteBtn = deleteButtons[0];
+                        const card = deleteBtn.closest('.step-image-card');
+                        const cardContainer = card.closest('.col-12, .col-sm-6, .col-lg-4');
+                        
+                        if (card) {
+                            // 添加点击动画效果
+                            deleteBtn.style.transform = 'scale(1.2) rotate(15deg)';
+                            deleteBtn.style.backgroundColor = 'var(--danger-color, #dc2626)';
+                            deleteBtn.style.color = 'white';
+                            
+                            // 卡片摇晃效果
+                            card.style.transition = 'all 0.3s ease';
+                            card.style.transform = 'scale(0.95)';
+                            
+                            // 轻微的摇晃动画
+                            card.style.animation = 'shake 0.5s ease-in-out';
+                            
+                            // 添加删除标记
+                            const deleteBadge = document.createElement('div');
+                            deleteBadge.style.cssText = `
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                background-color: rgba(220, 38, 38, 0.95);
+                                color: white;
+                                font-size: 14px;
+                                padding: 8px 16px;
+                                border-radius: 6px;
+                                font-weight: bold;
+                                z-index: 20;
+                                text-align: center;
+                                pointer-events: none;
+                            `;
+                            deleteBadge.innerHTML = 'X';
+                            card.querySelector('div[style*="position: relative"]').appendChild(deleteBadge);
+                            
+                            // 图片视觉效果变化
+                            const img = card.querySelector('img');
+                            if (img) {
+                                img.style.filter = 'grayscale(100%) blur(1px)';
+                                img.style.opacity = '0.5';
+                                img.style.transition = 'all 0.3s ease';
                             }
+                            
+                            // 添加红色边框
+                            card.style.boxShadow = '0 0 0 3px var(--danger-color, #dc2626)';
+                            
+                            // 延迟移除，让动画效果显示
+                            setTimeout(() => {
+                                if (cardContainer) {
+                                    cardContainer.style.transition = 'all 0.3s ease';
+                                    cardContainer.style.opacity = '0';
+                                    cardContainer.style.transform = 'scale(0.9) translateX(10px)';
+                                    
+                                    // 完全移除
+                                    setTimeout(() => {
+                                        cardContainer.remove();
+                                        // 更新计数和空状态
+                                        updateUploadedCount();
+                                    }, 300);
+                                }
+                            }, 600);
                         }
-                    } catch (e) {
-                        console.error('移除卡片时出错:', e);
                     }
                     
-                    // 更新计数和空状态
-                    updateUploadedCount();
+                    // 添加CSS动画
+                    if (!document.getElementById('shake-animation')) {
+                        const style = document.createElement('style');
+                        style.id = 'shake-animation';
+                        style.textContent = `
+                            @keyframes shake {
+                                0%, 100% { transform: translateX(0) scale(0.95); }
+                                25% { transform: translateX(-5px) scale(0.95); }
+                                75% { transform: translateX(5px) scale(0.95); }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
                     
                     // 显示删除提示
                     showMessage(`已标记图片为删除，保存后生效`, 'info');

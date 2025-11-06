@@ -776,68 +776,98 @@ def update_task_process(request, project_id, task_id):
             print(f"开始处理文件上传，总共收到 {len(request.FILES)} 个文件")
             print(f"上传前step_images列表长度: {len(task['step_images'])}")
             
-            # 先收集所有需要处理的文件
-            image_files_to_process = []
+            # 先收集所有需要处理的文件，按步骤分组
+            files_by_step = {}
             for key, image_file in request.FILES.items():
                 if key.startswith('step_image_'):
-                    image_files_to_process.append((key, image_file))
+                    parts = key.split('_')
+                    if len(parts) >= 3:
+                        try:
+                            step_num = int(parts[2])
+                            if step_num not in files_by_step:
+                                files_by_step[step_num] = []
+                            files_by_step[step_num].append((key, image_file))
+                        except ValueError:
+                            print(f"解析键名失败: {key}, parts[2]不是有效的步骤号")
             
-            print(f"需要处理的图片文件数量: {len(image_files_to_process)}")
+            print(f"按步骤分组后的文件: {json.dumps({k: len(v) for k, v in files_by_step.items()})}")
             
-            # 逐个处理收集到的文件
-            for key, image_file in image_files_to_process:
+            # 为每个步骤处理文件
+            for step_num, files in files_by_step.items():
+                uploaded_steps.add(step_num)
+                
+                # 检查当前步骤已有图片数量
+                existing_step_images = [img for img in task['step_images'] if img.get('step') == step_num]
+                current_count = len(existing_step_images)
+                max_allowed = 3  # 每个步骤最多3张图片
+                remaining_slots = max_allowed - current_count
+                
+                print(f"步骤{step_num}: 当前已有{current_count}张图片, 剩余{remaining_slots}个槽位")
+                
+                # 限制每个步骤的图片数量
+                files_to_process = files[:remaining_slots]
+                if len(files) > remaining_slots:
+                    print(f"警告: 步骤{step_num}超过图片限制，只处理前{remaining_slots}张")
+                
+                # 处理该步骤的文件
+                for index, (key, image_file) in enumerate(files_to_process):
                     try:
-                        # 解析键名，确保正确处理 step_image_{step}_{index} 格式
-                        parts = key.split('_')
-                        if len(parts) >= 3:
-                            # 确保parts[2]是步骤号
-                            try:
-                                step_num = int(parts[2])
-                                uploaded_steps.add(step_num)
-                                
-                                # 获取索引（如果有）
-                                index = parts[3] if len(parts) >= 4 else 0
-                                print(f"解析键名成功: {key}, 步骤: {step_num}, 索引: {index}")
-                            except ValueError:
-                                print(f"解析键名失败: {key}, parts[2]不是有效的步骤号")
-                                continue
-                            
-                            # 生成唯一文件名
-                            file_extension = os.path.splitext(image_file.name)[1].lower()
-                            base_name = os.path.splitext(image_file.name)[0]
-                            unique_filename = f"task_{task_id}_step_{step_num}_{index}_{base_name.replace(' ', '_')}{file_extension}"
-                            
-                            # 保存文件
-                            MEDIA_ROOT = os.path.join(settings.BASE_DIR, 'media', 'task_step_images')
-                            os.makedirs(MEDIA_ROOT, exist_ok=True)
-                            file_path = os.path.join(MEDIA_ROOT, unique_filename)
-                            
-                            with open(file_path, 'wb+') as destination:
-                                for chunk in image_file.chunks():
-                                    destination.write(chunk)
-                            
-                            # 获取描述，支持两种格式的键名
-                            description_key = f"step_description_{step_num}_{index}"
+                        # 生成唯一文件名，确保包含步骤号
+                        file_extension = os.path.splitext(image_file.name)[1].lower()
+                        base_name = os.path.splitext(image_file.name)[0]
+                        unique_filename = f"task_{task_id}_step_{step_num}_{index}_{base_name.replace(' ', '_')}{file_extension}"
+                        
+                        # 保存文件
+                        MEDIA_ROOT = os.path.join(settings.BASE_DIR, 'media', 'task_step_images')
+                        os.makedirs(MEDIA_ROOT, exist_ok=True)
+                        file_path = os.path.join(MEDIA_ROOT, unique_filename)
+                        
+                        with open(file_path, 'wb+') as destination:
+                            for chunk in image_file.chunks():
+                                destination.write(chunk)
+                        
+                        # 获取描述，支持两种格式的键名
+                        description_key = f"step_description_{step_num}_{index}"
+                        description = request.POST.get(description_key, '')
+                        # 如果找不到带索引的描述，尝试不带索引的
+                        if not description:
+                            description_key = f"step_description_{step_num}"
                             description = request.POST.get(description_key, '')
-                            # 如果找不到带索引的描述，尝试不带索引的
-                            if not description:
-                                description_key = f"step_description_{step_num}"
-                                description = request.POST.get(description_key, '')
-                            
-                            # 构建URL
-                            image_url = f'/media/task_step_images/{unique_filename}'
-                            
-                            # 直接添加新图片，不限制数量
-                            task['step_images'].append({
-                                'step': step_num,
-                                'url': image_url,
-                                'file_name': unique_filename,  # 与前端保持一致
-                                'filename': unique_filename,   # 保持兼容性
-                                'description': description
-                            })
-                            uploaded_count += 1
-                            print(f"成功上传新图片: {unique_filename} (第{uploaded_count}张)")
-                            print(f"添加图片后，step_images列表长度: {len(task['step_images'])}")
+                        
+                        # 构建URL
+                        image_url = f'/media/task_step_images/{unique_filename}'
+                        
+                        # 创建图片数据对象，明确关联到当前步骤
+                        image_data = {
+                            'step': step_num,
+                            'url': image_url,
+                            'file_name': unique_filename,
+                            'filename': unique_filename,
+                            'description': description
+                        }
+                        
+                        # 添加到任务的步骤图片列表
+                        task['step_images'].append(image_data)
+                        uploaded_count += 1
+                        print(f"成功上传图片到步骤{step_num}: {unique_filename} (第{uploaded_count}张)")
+                        
+                        # 同时将图片保存到数据库
+                        try:
+                            task_image = TaskImage(
+                                task_id=task_id,
+                                image=os.path.join('task_step_images', unique_filename),
+                                description=description
+                            )
+                            task_image.save()
+                            print(f"✓ 图片已保存到数据库: {unique_filename}")
+                            # 更新image_data，添加数据库ID
+                            image_data['id'] = task_image.id
+                        except Exception as db_error:
+                            print(f"✗ 保存到数据库失败: {db_error}")
+                    
+                    except Exception as e:
+                        print(f"处理步骤{step_num}的图片时出错: {e}")
+                        continue
                     except (ValueError, IndexError) as e:
                         print(f"处理上传图片时出错: {e}")
                         continue

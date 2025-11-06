@@ -212,37 +212,9 @@
         display: block;
     }
     
-    /* 表单验证样式 - 与全局错误样式保持一致 */
-    .form-control.error {
-        border-color: var(--error-color);
-        animation: shake 0.5s ease-in-out;
-    }
+
     
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-    
-    /* 确保错误提示样式与全局一致 */
-    .alert-danger {
-        background-color: rgba(220, 53, 69, 0.1);
-        border: 1px solid rgba(220, 53, 69, 0.2);
-        border-radius: var(--border-radius);
-        padding: 1rem;
-    }
-    
-    .text-danger {
-        color: var(--error-color);
-    }
-    
-    .mb-2 {
-        margin-bottom: 0.5rem;
-    }
-    
-    .mb-4 {
-        margin-bottom: 1rem;
-    }
+    /* 依赖全局样式系统，无需重复定义 */
     
     /* 响应式设计 */
     @media (max-width: 768px) {
@@ -306,8 +278,8 @@
                     
                     <!-- 错误提示 - 使用全局错误样式 -->
                     {% if form.errors %}
-                    <div class="alert alert-danger mb-4">
-                        <h3 class="text-danger mb-2">请修复以下问题：</h3>
+                    <div class="alert alert-danger">
+                        <h3 class="text-danger">请修复以下问题：</h3>
                         <ul class="text-danger">
                             {% for field, errors in form.errors.items %}
                                 {% for error in errors %}
@@ -381,9 +353,7 @@
                         <textarea id="process" name="process" rows="5" placeholder="请输入实现过程，每行一个步骤" class="form-control">{{ form.process.value|default:'' }}</textarea>
                         <small class="form-text">每行输入一个步骤，系统将自动按顺序显示</small>
                     </div>
-
-
-
+                    
                     <div class="form-actions">
                         <a href="{% if project %}{% url 'project_detail' project_id=project.id %}{% else %}{% url 'task_list' %}{% endif %}" class="btn btn-secondary">
                             取消
@@ -399,13 +369,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 进度条实时显示和交互
+            // 进度条基础交互功能
             const progressSlider = document.getElementById('progress');
             const progressValue = document.getElementById('progress-value');
             const progressFill = document.getElementById('progress-fill');
             
             if (progressSlider && progressValue && progressFill) {
-                // 初始化进度条位置
+                // 初始化进度条显示
                 const initialValue = progressSlider.value;
                 progressValue.textContent = initialValue + '%';
                 progressFill.style.width = initialValue + '%';
@@ -415,49 +385,6 @@
                     const value = this.value;
                     progressValue.textContent = value + '%';
                     progressFill.style.width = value + '%';
-                });
-                
-                // 增强交互体验：点击进度条任意位置可以直接跳转到对应位置
-                progressSlider.parentElement.addEventListener('click', function(e) {
-                    if (e.target === progressSlider || e.target === progressSlider.parentElement) {
-                        const rect = this.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const percentage = (x / rect.width) * 100;
-                        const value = Math.max(0, Math.min(100, Math.round(percentage / 10) * 10)); // 按10的步进取整
-                        
-                        progressSlider.value = value;
-                        progressValue.textContent = value + '%';
-                        progressFill.style.width = value + '%';
-                        
-                        // 触发input事件以确保表单正确更新
-                        const inputEvent = new Event('input', { bubbles: true });
-                        progressSlider.dispatchEvent(inputEvent);
-                    }
-                });
-            }
-            
-            // 表单验证
-            const taskForm = document.querySelector('.task-form');
-            
-            if (taskForm) {
-                taskForm.addEventListener('submit', function(event) {
-                    let isValid = true;
-                    const requiredFields = taskForm.querySelectorAll('[required]');
-                    
-                    requiredFields.forEach(field => {
-                        if (!field.value.trim()) {
-                            isValid = false;
-                            field.classList.add('error');
-                            setTimeout(() => {
-                                field.classList.remove('error');
-                            }, 3000);
-                        }
-                    });
-                    
-                    if (!isValid) {
-                        event.preventDefault();
-                        alert('请填写所有必填字段');
-                    }
                 });
             }
         });
