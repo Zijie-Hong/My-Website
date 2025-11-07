@@ -108,18 +108,16 @@ function setupProcessEditFunctionality() {
                 stepHeader.innerHTML = `<h5>步骤 ${stepNum}</h5>`;
                 uploadedImagesContainer.appendChild(stepHeader);
                 
-                // 创建图片容器行 - 使用flex确保图片在同一行
+                // 创建图片容器 - 使用grid布局实现网格式排列
                 const imagesRow = document.createElement('div');
-                imagesRow.style.cssText = 'display: flex; gap: 10px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;';
+                imagesRow.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 16px 0; width: 100%;';
+                imagesRow.classList.add('step-images-container');
                 
                 // 为当前步骤的每个图片创建缩略图
                 imagesByStep[stepNum].forEach(imageData => {
-                    const imageWrapper = document.createElement('div');
-                    imageWrapper.style.cssText = 'width: 120px; flex-shrink: 0;';
-                    
                     const card = createImageCard(imageData);
-                    imageWrapper.appendChild(card);
-                    imagesRow.appendChild(imageWrapper);
+                    // 直接将卡片添加到网格容器中，无需额外的包装器
+                    imagesRow.appendChild(card);
                 });
                 
                 uploadedImagesContainer.appendChild(imagesRow);
@@ -159,14 +157,22 @@ function setupProcessEditFunctionality() {
         
         const isPending = imageData.isPending || false;
         
-        // 创建卡片容器
+        // 创建卡片容器 - 优化网格布局下的样式
         const card = document.createElement('div');
         card.className = 'task-thumbnail-card';
-        card.style.cssText = 'position: relative; width: 100%;';
+        card.style.cssText = 'position: relative; width: 100%; padding: 12px; box-sizing: border-box; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s;';
+        card.onmouseenter = function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        };
+        card.onmouseleave = function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        };
         
-        // 图片容器 - 固定尺寸
+        // 图片容器 - 适配网格布局的尺寸
         const imageContainer = document.createElement('div');
-        imageContainer.style.cssText = 'width: 100%; height: 100px; background-color: #f3f4f6; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;';
+        imageContainer.style.cssText = 'width: 100%; height: 220px; background-color: #f3f4f6; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;';
         
         const img = document.createElement('img');
         img.src = imageUrl;
