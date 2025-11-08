@@ -246,7 +246,8 @@ def add_task(request, project_id):
                 'description': request.POST.get('description', '').strip(),
                 'process': request.POST.get('process', '').strip(),
                 'results': request.POST.get('results', '').strip(),
-                'progress': int(request.POST.get('progress', 0))
+                'progress': int(request.POST.get('progress', 0)),
+                'pain_points': request.POST.get('pain_points', '').strip()
             }
             
             # 简单验证
@@ -368,6 +369,7 @@ def edit_task(request, project_id, task_id):
             workshop = int(request.POST.get('workshop', 1))
             progress = int(request.POST.get('progress', 0))
             description = request.POST.get('description', '').strip()
+            pain_points = request.POST.get('pain_points', '').strip()  # 获取挑战点字段
             process = request.POST.get('process', '').strip()
             
             # 处理文件上传
@@ -404,6 +406,7 @@ def edit_task(request, project_id, task_id):
             task['workshop'] = workshop
             task['progress'] = progress
             task['description'] = description
+            task['pain_points'] = pain_points  # 保存挑战点字段
             
             # 处理process字段，将字符串转换为对象数组格式
             if process.strip():
@@ -562,12 +565,12 @@ def upload_task_image(request, project_id, task_id):
     return JsonResponse({'status': 'error', 'message': '不支持的请求方法'}, status=405)
 
 def update_task_process(request, project_id, task_id):
-    """更新任务的实现过程，包括多步骤图片上传和删除 - 修复版"""
+    """更新任务的实现过程，只更新步骤的title字段"""
     global global_data
     
     if request.method == 'POST':
         try:
-            print(f"开始处理项目 {project_id} 任务 {task_id} 的图片删除请求")
+            print(f"开始处理项目 {project_id} 任务 {task_id} 的步骤标题更新请求")
             
             # 查找项目和任务
             project = next((p for p in global_data['projects'] if p['id'] == int(project_id)), None)
@@ -607,6 +610,84 @@ def update_task_process(request, project_id, task_id):
                 task['process'] = []
                 print("process为空，设置为空数组")
             
+            # 保存数据到文件
+            if save_data(global_data):
+                print("数据成功保存到 JSON 文件")
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': '实现过程标题更新成功',
+                    'steps_count': len(task['process'])
+                })
+            else:
+                print("警告: 保存数据到 JSON 文件失败")
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': '保存数据失败，请重试'
+                })
+        except Exception as e:
+            print(f"处理请求时发生错误: {e}")
+            return JsonResponse({'status': 'error', 'message': f'处理请求时出错: {str(e)}'}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+def update_task_process_content(request, project_id, task_id):
+    """更新任务的实现过程内容，包括步骤的content字段和图片处理（上传与删除）"""
+    global global_data
+    
+    if request.method == 'POST':
+        try:
+            print(f"开始处理项目 {project_id} 任务 {task_id} 的步骤内容和图片更新请求")
+            
+            # 查找项目和任务
+            project = next((p for p in global_data['projects'] if p['id'] == int(project_id)), None)
+            if not project:
+                return JsonResponse({'status': 'error', 'message': '项目不存在'}, status=404)
+            
+            task = next((t for t in project['tasks'] if t['id'] == int(task_id)), None)
+            if not task:
+                return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
+            
+            # 获取过程内容
+            process_content = request.POST.get('process_content', '')
+            
+            # 将textarea内容按行分割，并更新content字段
+            if process_content.strip():
+                # 分割行但保留空行
+                lines = [line.strip() for line in process_content.split('\n')]
+                print(f"process_content分割后得到 {len(lines)} 行")
+                print(f"分割后的前几行: {lines[:3]}")
+                
+                # 准备新的步骤数组，保留原有title值，更新content
+                updated_process = []
+                # 获取原有的步骤，用于保留title
+                original_steps = {i: step for i, step in enumerate(task.get('process', []))}
+                print(f"原有步骤数量: {len(original_steps)}")
+                
+                # 创建更新后的步骤对象
+                for i, content in enumerate(lines):
+                    # 如果有对应位置的原步骤，保留其title值，否则title设为默认值
+                    title = original_steps.get(i, {}).get('title', f'步骤 {i+1}')
+                    updated_process.append({'title': title, 'content': content})
+                    
+                # 对于原有步骤中超出新内容行数的部分，也添加到更新后的数组中
+                for i in range(len(lines), len(original_steps)):
+                    if i in original_steps:
+                        updated_process.append(original_steps[i])
+                        
+                task['process'] = updated_process
+                print(f"成功更新process对象数组的content字段，包含{len(task['process'])}个步骤")
+            else:
+                # 保留原有步骤结构，只清空content
+                if 'process' in task and task['process']:
+                    # 遍历现有步骤，保留title，清空content
+                    for step in task['process']:
+                        step['content'] = ''
+                    print(f"保留了{len(task['process'])}个步骤，清空了所有content")
+                else:
+                    # 如果原本就没有步骤，保持为空数组
+                    task['process'] = []
+                    print("process_content为空，且原本没有步骤，保持为空数组")
+            
             # 确保步骤图片列表存在
             if 'step_images' not in task:
                 task['step_images'] = []
@@ -642,7 +723,7 @@ def update_task_process(request, project_id, task_id):
                 
                 for img in task['step_images']:
                     step_num = str(img.get('step', ''))
-                    # 同时检查'filename'和'file_name'键
+                    # 同时检查'file_name'和'filename'键
                     filename = img.get('file_name', img.get('filename', ''))
                     
                     # 构建当前图片的标识
@@ -813,7 +894,8 @@ def update_task_process(request, project_id, task_id):
                 print("数据成功保存到 JSON 文件")
                 return JsonResponse({
                     'status': 'success', 
-                    'message': f'实现过程更新成功，成功上传 {uploaded_count} 张图片',
+                    'message': f'实现过程内容和图片更新成功，成功上传 {uploaded_count} 张图片',
+                    'steps_count': len(task['process']),
                     'remaining_images': len(task['step_images'])
                 })
             else:
@@ -821,86 +903,9 @@ def update_task_process(request, project_id, task_id):
                 print("警告: 保存数据到 JSON 文件失败，但图片操作已完成")
                 return JsonResponse({
                     'status': 'success', 
-                    'message': '实现过程更新成功',
+                    'message': '实现过程内容和图片更新成功',
+                    'steps_count': len(task['process']),
                     'remaining_images': len(task['step_images'])
-                })
-        except Exception as e:
-            print(f"处理请求时发生错误: {e}")
-            return JsonResponse({'status': 'error', 'message': f'处理请求时出错: {str(e)}'}, status=500)
-    
-    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
-
-def update_task_process_content(request, project_id, task_id):
-    """更新任务的实现过程内容，只更新步骤的content字段"""
-    global global_data
-    
-    if request.method == 'POST':
-        try:
-            print(f"开始处理项目 {project_id} 任务 {task_id} 的步骤内容更新请求")
-            
-            # 查找项目和任务
-            project = next((p for p in global_data['projects'] if p['id'] == int(project_id)), None)
-            if not project:
-                return JsonResponse({'status': 'error', 'message': '项目不存在'}, status=404)
-            
-            task = next((t for t in project['tasks'] if t['id'] == int(task_id)), None)
-            if not task:
-                return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
-            
-            # 获取过程内容
-            process_content = request.POST.get('process_content', '')
-            
-            # 将textarea内容按行分割，并更新content字段
-            if process_content.strip():
-                # 分割行但保留空行
-                lines = [line.strip() for line in process_content.split('\n')]
-                print(f"process_content分割后得到 {len(lines)} 行")
-                print(f"分割后的前几行: {lines[:3]}")
-                
-                # 准备新的步骤数组，保留原有title值，更新content
-                updated_process = []
-                # 获取原有的步骤，用于保留title
-                original_steps = {i: step for i, step in enumerate(task.get('process', []))}
-                print(f"原有步骤数量: {len(original_steps)}")
-                
-                # 创建更新后的步骤对象
-                for i, content in enumerate(lines):
-                    # 如果有对应位置的原步骤，保留其title值，否则title设为默认值
-                    title = original_steps.get(i, {}).get('title', f'步骤 {i+1}')
-                    updated_process.append({'title': title, 'content': content})
-                    
-                # 对于原有步骤中超出新内容行数的部分，也添加到更新后的数组中
-                for i in range(len(lines), len(original_steps)):
-                    if i in original_steps:
-                        updated_process.append(original_steps[i])
-                        
-                task['process'] = updated_process
-                print(f"成功更新process对象数组的content字段，包含{len(task['process'])}个步骤")
-            else:
-                # 保留原有步骤结构，只清空content
-                if 'process' in task and task['process']:
-                    # 遍历现有步骤，保留title，清空content
-                    for step in task['process']:
-                        step['content'] = ''
-                    print(f"保留了{len(task['process'])}个步骤，清空了所有content")
-                else:
-                    # 如果原本就没有步骤，保持为空数组
-                    task['process'] = []
-                    print("process_content为空，且原本没有步骤，保持为空数组")
-            
-            # 保存数据到文件
-            if save_data(global_data):
-                print("数据成功保存到 JSON 文件")
-                return JsonResponse({
-                    'status': 'success', 
-                    'message': '实现过程内容更新成功',
-                    'steps_count': len(task['process'])
-                })
-            else:
-                print("警告: 保存数据到 JSON 文件失败")
-                return JsonResponse({
-                    'status': 'error', 
-                    'message': '保存数据失败，请重试'
                 })
         except Exception as e:
             print(f"处理请求时发生错误: {e}")

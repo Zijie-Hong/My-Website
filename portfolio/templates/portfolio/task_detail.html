@@ -2741,10 +2741,9 @@
                     let startX, startY, translateX = 0, translateY = 0;
                     let imgElement = null;
                     
-                    // 初始化：如果第一个步骤没有图片，自动跳转到有图片的步骤
-                    while (currentStep < steps.length && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
-                        currentStep++;
-                    }
+                    // 初始化：从第一个步骤开始，无论是否有图片
+                    // 移除自动跳转到有图片步骤的逻辑，让所有步骤都能按顺序显示
+                    currentStep = 0;
                     
                     // 更新步骤显示
                     updateStepDisplay(currentStep);
@@ -2772,10 +2771,7 @@
                             currentStep--;
                             // 重置图片索引
                             currentImageIndex = 0;
-                            // 如果上一个步骤没有图片，继续向前找
-                            while (currentStep > 0 && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
-                                currentStep--;
-                            }
+                            // 移除强制寻找有图片步骤的逻辑，让无图片的步骤也能正常显示
                         }
                         
                         updateStepDisplay(currentStep);
@@ -2793,10 +2789,7 @@
                             currentStep++;
                             // 重置图片索引
                             currentImageIndex = 0;
-                            // 如果下一个步骤没有图片，继续向后找
-                            while (currentStep < steps.length - 1 && (!steps[currentStep].imageUrls || steps[currentStep].imageUrls.length === 0)) {
-                                currentStep++;
-                            }
+                            // 移除强制寻找有图片步骤的逻辑，让无图片的步骤也能正常显示
                         }
                         
                         updateStepDisplay(currentStep);
@@ -2839,31 +2832,104 @@
                         // 使用flex布局让内容自适应整个可用空间
                         const content = document.createElement('div');
                         content.style.display = 'flex';
-                        content.style.flexDirection = 'column';
+                        content.style.flexDirection = 'row'; // 改为水平布局
                         content.style.width = '100%';
                         content.style.height = '100%';
-                        content.style.textAlign = 'center';
                         content.style.color = 'white';
                         content.style.padding = '10px';
-                        
+                        content.style.gap = '15px';
+
+                        // 创建左侧内容容器（占80%宽度）
+                        const leftContent = document.createElement('div');
+                        leftContent.style.display = 'flex';
+                        leftContent.style.flexDirection = 'column';
+                        leftContent.style.width = '80%';
+                        leftContent.style.textAlign = 'center';
                                                 
-                        // 步骤文本 - 精简显示
-                        const text = document.createElement('div');
-                        text.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-                        text.style.color = '#333';
-                        text.style.padding = '10px';
-                        text.style.borderRadius = '6px';
-                        text.style.margin = '0 auto 10px';
-                        text.style.fontSize = '0.9rem';
-                        text.style.maxWidth = '95%';
-                        text.style.maxHeight = '60px';
-                        text.style.overflow = 'hidden';
-                        text.style.textOverflow = 'ellipsis';
-                        text.style.display = '-webkit-box';
-                        text.style.webkitLineClamp = '2';
-                        text.style.webkitBoxOrient = 'vertical';
-                        text.textContent = step.text;
-                        content.appendChild(text);
+                        // 步骤文本 - 同时显示title和content
+                        const textContainer = document.createElement('div');
+                        textContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                        textContainer.style.color = 'white';
+                        textContainer.style.padding = '15px';
+                        textContainer.style.borderRadius = '8px';
+                        textContainer.style.margin = '0 auto 10px';
+                        textContainer.style.fontSize = '1.9rem';
+                        textContainer.style.maxWidth = '95%';
+                        textContainer.style.maxHeight = '150px';
+                        textContainer.style.overflow = 'auto';
+                        textContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+                        textContainer.style.transition = 'all 0.3s ease';
+                        
+                        // 标题部分
+                        const titleElement = document.createElement('div');
+                        titleElement.style.fontSize = '1.2rem';
+                        titleElement.style.fontWeight = 'bold';
+                        titleElement.style.color = '#5c6bc0';
+                        titleElement.style.marginBottom = '8px';
+                        titleElement.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.5)';
+                        titleElement.textContent = step.title;
+                        textContainer.appendChild(titleElement);
+                        
+                        // 内容部分
+                        const contentElement = document.createElement('div');
+                        contentElement.style.lineHeight = '1.5';
+                        contentElement.style.color = '#ecf0f1';
+                        contentElement.style.textShadow = '1px 1px 1px rgba(0, 0, 0, 0.5)';
+                        contentElement.textContent = step.content;
+                        textContainer.appendChild(contentElement);
+                        
+                        leftContent.appendChild(textContainer);
+                        
+                        // 创建右侧pain points容器（占20%宽度）
+                        const painPointsContainer = document.createElement('div');
+                        painPointsContainer.style.display = 'flex';
+                        painPointsContainer.style.flexDirection = 'column';
+                        painPointsContainer.style.width = '20%';
+                        painPointsContainer.style.maxWidth = '300px';
+                        painPointsContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                        painPointsContainer.style.borderRadius = '8px';
+                        painPointsContainer.style.padding = '15px';
+                        painPointsContainer.style.color = 'white';
+                        painPointsContainer.style.overflow = 'auto';
+                        
+                        // 挑战点标题
+                        const painPointsTitle = document.createElement('div');
+                        painPointsTitle.style.fontSize = '1.1rem';
+                        painPointsTitle.style.fontWeight = 'bold';
+                        painPointsTitle.style.marginBottom = '10px';
+                        painPointsTitle.style.color = '#f39c12';
+                        painPointsTitle.textContent = '挑战点';
+                        painPointsContainer.appendChild(painPointsTitle);
+                        
+                        // 挑战点列表
+                        if (step.painPoints && step.painPoints.length > 0) {
+                            const painPointsList = document.createElement('ul');
+                            painPointsList.style.listStyleType = 'disc';
+                            painPointsList.style.paddingLeft = '20px';
+                            painPointsList.style.margin = '0';
+                            
+                            step.painPoints.forEach(point => {
+                                const listItem = document.createElement('li');
+                                listItem.style.marginBottom = '8px';
+                                listItem.style.lineHeight = '1.4';
+                                listItem.style.fontSize = '0.9rem';
+                                listItem.textContent = point;
+                                painPointsList.appendChild(listItem);
+                            });
+                            
+                            painPointsContainer.appendChild(painPointsList);
+                        } else {
+                            // 如果没有挑战点数据，显示提示信息
+                            const noPainPointsMsg = document.createElement('div');
+                            noPainPointsMsg.style.fontSize = '0.9rem';
+                            noPainPointsMsg.style.opacity = '0.7';
+                            noPainPointsMsg.textContent = '无挑战点数据';
+                            painPointsContainer.appendChild(noPainPointsMsg);
+                        }
+                        
+                        // 将左右容器添加到主内容容器
+                        content.appendChild(leftContent);
+                        content.appendChild(painPointsContainer);
                         
                         // 图片容器 - 最大化利用空间
                         const imgContainer = document.createElement('div');
@@ -2906,7 +2972,7 @@
                                 imgNavInfo.style.fontSize = '0.9rem';
                                 imgNavInfo.style.opacity = '0.8';
                                 imgNavInfo.textContent = `图片 ${currentImageIndex + 1} / ${step.imageUrls.length}`;
-                                content.appendChild(imgNavInfo);
+                                leftContent.appendChild(imgNavInfo);
                             }
                         } else {
                             // 如果没有图片，显示提示信息
@@ -2922,7 +2988,7 @@
                             imgContainer.appendChild(noImageMsg);
                         }
                         
-                        content.appendChild(imgContainer);
+                        leftContent.appendChild(imgContainer);
                         mainSlideArea.appendChild(content);
                         
                         // 更新缩略图导航
@@ -3285,16 +3351,34 @@
                     const steps = [];
                     const processElements = document.querySelectorAll('.process-step');
                     
+                    // 获取全局任务的pain points数据
+                    let painPoints = [];
+                    const painPointsList = document.querySelector('.pain-points-list');
+                    if (painPointsList) {
+                        const painPointItems = painPointsList.querySelectorAll('.pain-point-item');
+                        painPoints = Array.from(painPointItems).map(item => {
+                            const textElement = item.querySelector('.pain-point-text');
+                            return textElement ? textElement.textContent.trim() : '';
+                        }).filter(text => text); // 过滤空字符串
+                    }
+                    
                     processElements.forEach((element, index) => {
                         // 收集所有图片URL，而不仅仅是第一张
                         const allImages = element.querySelectorAll('.step-image img, .step-image-thumbnail img');
                         const imageUrls = Array.from(allImages).map(img => img.src);
                         
+                        // 收集步骤标题和描述内容
+                        const title = element.querySelector('.step-title')?.innerText || `步骤 ${index + 1}`;
+                        const description = element.querySelector('.step-description')?.innerText || '无描述';
+                        
                         const step = {
                             number: index + 1,
-                            text: element.querySelector('.step-text')?.innerText || '无描述',
+                            title: title,
+                            content: description,
+                            text: element.querySelector('.step-text')?.innerText || '无描述', // 保留兼容旧代码
                             imageUrl: imageUrls.length > 0 ? imageUrls[0] : null, // 保留第一张图片作为默认
-                            imageUrls: imageUrls // 添加所有图片URL数组
+                            imageUrls: imageUrls, // 添加所有图片URL数组
+                            painPoints: painPoints // 添加挑战点数据
                         };
                         steps.push(step);
                     });
