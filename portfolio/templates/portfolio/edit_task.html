@@ -374,6 +374,12 @@
                     </div>
                 </div>
                 
+                <div class="form-group">
+                    <label for="pain_points" class="form-label">遇到的挑战（每行代表一个挑战点）</label>
+                    <textarea id="pain_points" name="pain_points" class="form-textarea" rows="6" placeholder="请输入在完成任务过程中遇到的主要挑战和困难...">{% if task.pain_points %}{{ task.pain_points }}{% endif %}</textarea>
+                    <small class="form-help">请详细描述您在完成任务过程中遇到的困难、挑战和解决方案</small>
+                </div>
+                
                 <div class="form-actions">
                     <a href="{% url 'task_detail' project_id=project.id task_id=task.id %}" class="btn btn-secondary">
                         取消
