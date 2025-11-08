@@ -473,7 +473,7 @@
             <h1 style="text-align: center; width: 100%; margin: 0 auto;">任务列表</h1>
             <p style="text-align: center; width: 100%; margin: 0 auto;">浏览和管理所有任务</p>
             {% if all_projects %}
-            <div style="text-align: center; width: 100%;">
+            <div style="text-align: center; width: 100%; margin-top: 1.5rem;"></div>
                 <a href="{% url 'add_task' project_id=all_projects.0.id %}" class="btn btn-primary add-task-main">
                     <i class="fas fa-plus"></i> 新增任务
                 </a>

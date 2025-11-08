@@ -107,7 +107,7 @@
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
         padding: 1.5rem;
-        border-top: 3px solid var(--danger-color);
+      
     }
     
     .pain-points-list {
@@ -346,7 +346,6 @@
     .process-step:hover .step-title {
         transform: translateX(7px);
         color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
         font-weight: 600;
     }
     
@@ -917,13 +916,7 @@
                                     <!-- 浏览内容将动态加载 -->
                                 </div>
                             </div>
-                            <div class="modal-footer" style="background-color: rgba(0, 0, 0, 0.8); color: white; position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
-                                <button id="prev-step" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-                                    </svg>
-                                    上一步
-                                </button>
+                            <div class="modal-footer" style="background-color: rgba(0, 0, 0, 0.8); color: white; position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; align-items: center; padding: 0.5rem;">
                                 <div style="display: flex; gap: 0.5rem;">
                                     <button id="play-pause" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                                         <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -935,12 +928,7 @@
                                         自动播放
                                     </button>
                                 </div>
-                                <button id="next-step" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-                                    下一步
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8.5 16a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L8 2.707V15.5a.5.5 0 0 0 .5.5z"/>
-                                    </svg>
-                                </button>
+                                <!-- 上一步和下一步按钮已移至挑战点容器中 -->
                             </div>
                         </div>
                     </div>
@@ -1267,7 +1255,7 @@
                     </div>
 
                     <!-- Pain Points/Struggles 部分 -->
-                    <div class="task-section" id="pain-points-section">
+                    <div class="task-section" id="pain-points-section" style="border-left: 3px solid #dc3545;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.75rem;">
                             <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">遇到的挑战</h2>
                         </div>
@@ -2833,18 +2821,20 @@
                         const content = document.createElement('div');
                         content.style.display = 'flex';
                         content.style.flexDirection = 'row'; // 改为水平布局
+                        content.style.justifyContent = 'space-between'; // 确保左右容器分别贴紧两侧
                         content.style.width = '100%';
                         content.style.height = '100%';
                         content.style.color = 'white';
                         content.style.padding = '10px';
                         content.style.gap = '15px';
 
-                        // 创建左侧内容容器（占80%宽度）
+                        // 创建左侧内容容器（占主要宽度）
                         const leftContent = document.createElement('div');
                         leftContent.style.display = 'flex';
                         leftContent.style.flexDirection = 'column';
-                        leftContent.style.width = '80%';
+                        leftContent.style.flex = '1'; // 占据剩余所有空间
                         leftContent.style.textAlign = 'center';
+                        leftContent.style.order = '1'; // 确保在flex容器中位于左侧
                                                 
                         // 步骤文本 - 同时显示title和content
                         const textContainer = document.createElement('div');
@@ -2880,17 +2870,19 @@
                         
                         leftContent.appendChild(textContainer);
                         
-                        // 创建右侧pain points容器（占20%宽度）
+                        // 创建右侧pain points容器（置于最右侧）
                         const painPointsContainer = document.createElement('div');
                         painPointsContainer.style.display = 'flex';
                         painPointsContainer.style.flexDirection = 'column';
-                        painPointsContainer.style.width = '20%';
-                        painPointsContainer.style.maxWidth = '300px';
+                        painPointsContainer.style.minWidth = '250px';
+                        painPointsContainer.style.maxWidth = '300px'; // 限制最大宽度
+                        painPointsContainer.style.flexShrink = '0'; // 确保不会被压缩
                         painPointsContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
                         painPointsContainer.style.borderRadius = '8px';
                         painPointsContainer.style.padding = '15px';
                         painPointsContainer.style.color = 'white';
                         painPointsContainer.style.overflow = 'auto';
+                        painPointsContainer.style.order = '2'; // 确保在flex容器中位于右侧
                         
                         // 挑战点标题
                         const painPointsTitle = document.createElement('div');
@@ -2927,28 +2919,93 @@
                             painPointsContainer.appendChild(noPainPointsMsg);
                         }
                         
-                        // 将左右容器添加到主内容容器
+                        // 在挑战点容器底部添加导航按钮
+                        const navButtonsContainer = document.createElement('div');
+                        navButtonsContainer.style.marginTop = 'auto'; // 自动推到底部
+                        navButtonsContainer.style.paddingTop = '15px';
+                        navButtonsContainer.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)';
+                        navButtonsContainer.style.display = 'flex';
+                        navButtonsContainer.style.gap = '10px';
+                        navButtonsContainer.style.justifyContent = 'space-between';
+                        
+                        // 创建上一步按钮
+                        const prevBtnInPainPoint = document.createElement('button');
+                        prevBtnInPainPoint.id = 'prev-step-pain-point';
+                        prevBtnInPainPoint.style.cssText = `
+                            background-color: #4a4a4a;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            padding: 8px 12px;
+                            cursor: pointer;
+                            font-size: 0.8rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            flex: 1;
+                            transition: background-color 0.2s;
+                        `;
+                        prevBtnInPainPoint.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                            </svg>
+                            上一步
+                        `;
+                        prevBtnInPainPoint.addEventListener('click', goToPrevStep);
+                        
+                        // 创建下一步按钮
+                        const nextBtnInPainPoint = document.createElement('button');
+                        nextBtnInPainPoint.id = 'next-step-pain-point';
+                        nextBtnInPainPoint.style.cssText = `
+                            background-color: #4a4a4a;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            padding: 8px 12px;
+                            cursor: pointer;
+                            font-size: 0.8rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
+                            flex: 1;
+                            justify-content: flex-end;
+                            transition: background-color 0.2s;
+                        `;
+                        nextBtnInPainPoint.innerHTML = `
+                            下一步
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        `;
+                        nextBtnInPainPoint.addEventListener('click', goToNextStep);
+                        
+                        navButtonsContainer.appendChild(prevBtnInPainPoint);
+                        navButtonsContainer.appendChild(nextBtnInPainPoint);
+                        painPointsContainer.appendChild(navButtonsContainer);
+                        
+                        // 将容器添加到主内容容器，确保挑战点容器在最右边
                         content.appendChild(leftContent);
                         content.appendChild(painPointsContainer);
                         
-                        // 图片容器 - 最大化利用空间
-                        const imgContainer = document.createElement('div');
-                        imgContainer.style.display = 'flex';
-                        imgContainer.style.flex = '1';
-                        imgContainer.style.justifyContent = 'center';
-                        imgContainer.style.alignItems = 'center';
-                        imgContainer.style.marginTop = '5px';
-                        imgContainer.style.position = 'relative';
-                        imgContainer.style.overflow = 'hidden';
-                        
-                        // 图片包装器 - 用于缩放和拖拽
-                        const imgWrapper = document.createElement('div');
-                        imgWrapper.style.position = 'relative';
-                        imgWrapper.style.transition = 'transform 0.2s ease';
-                        
-                        // 步骤图片 - 单张显示，支持图片切换和缩放
+                        // 如果有图片，显示图片区域
                         if (step.imageUrls && step.imageUrls.length > 0) {
-                            // 显示当前图片
+                            // 图片容器 - 最大化利用空间
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.display = 'flex';
+                            imgContainer.style.flex = '1';
+                            imgContainer.style.justifyContent = 'center';
+                            imgContainer.style.alignItems = 'center';
+                            imgContainer.style.marginTop = '5px';
+                            imgContainer.style.position = 'relative';
+                            imgContainer.style.overflow = 'hidden';
+                            imgContainer.style.height = '500px'; // 设置固定高度
+                            
+                            // 图片包装器 - 用于缩放和拖拽
+                            const imgWrapper = document.createElement('div');
+                            imgWrapper.style.position = 'relative';
+                            imgWrapper.style.transition = 'transform 0.2s ease';
+                            
+                            // 显示当前选中的图片
                             imgElement = document.createElement('img');
                             imgElement.src = step.imageUrls[currentImageIndex];
                             imgElement.alt = `步骤 ${step.number} 图片`;
@@ -2964,15 +3021,75 @@
                             imgWrapper.appendChild(imgElement);
                             imgContainer.appendChild(imgWrapper);
                             
-                            // 如果有多个图片，显示图片导航信息
+                            leftContent.appendChild(imgContainer);
+                            
+                            
+                            
+                            // 图片缩略图区域 - 显示所有图片的缩略图
                             if (step.imageUrls.length > 1) {
-                                const imgNavInfo = document.createElement('div');
-                                imgNavInfo.style.color = 'white';
-                                imgNavInfo.style.marginTop = '5px';
-                                imgNavInfo.style.fontSize = '0.9rem';
-                                imgNavInfo.style.opacity = '0.8';
-                                imgNavInfo.textContent = `图片 ${currentImageIndex + 1} / ${step.imageUrls.length}`;
-                                leftContent.appendChild(imgNavInfo);
+                                const thumbnailContainer = document.createElement('div');
+                                thumbnailContainer.style.display = 'flex';
+                                thumbnailContainer.style.flexWrap = 'wrap';
+                                thumbnailContainer.style.gap = '10px';
+                                thumbnailContainer.style.marginTop = '10px';
+                                thumbnailContainer.style.padding = '10px';
+                                thumbnailContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                                thumbnailContainer.style.borderRadius = '8px';
+                                thumbnailContainer.style.maxHeight = '150px';
+                                thumbnailContainer.style.overflowY = 'auto';
+                                thumbnailContainer.style.justifyContent = 'center';
+                                
+                                
+                                
+                                // 创建每个图片的缩略图
+                                step.imageUrls.forEach((imgUrl, index) => {
+                                    const thumbnail = document.createElement('div');
+                                    thumbnail.style.width = '100px';
+                                    thumbnail.style.height = '80px';
+                                    thumbnail.style.cursor = 'pointer';
+                                    thumbnail.style.border = index === currentImageIndex ? '3px solid #4a9eff' : '1px solid #555';
+                                    thumbnail.style.borderRadius = '4px';
+                                    thumbnail.style.overflow = 'hidden';
+                                    thumbnail.style.transition = 'all 0.2s ease';
+                                    thumbnail.style.position = 'relative';
+                                    thumbnail.style.display = 'flex';
+                                    thumbnail.style.justifyContent = 'center';
+                                    thumbnail.style.alignItems = 'center';
+                                    
+                                    // 缩略图图片
+                                    const thumbImg = document.createElement('img');
+                                    thumbImg.src = imgUrl;
+                                    thumbImg.alt = `缩略图 ${index + 1}`;
+                                    thumbImg.style.width = '100%';
+                                    thumbImg.style.height = '100%';
+                                    thumbImg.style.objectFit = 'cover';
+                                    
+                                    // 图片索引标记
+                                    const indexBadge = document.createElement('div');
+                                    indexBadge.style.position = 'absolute';
+                                    indexBadge.style.bottom = '2px';
+                                    indexBadge.style.right = '2px';
+                                    indexBadge.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                                    indexBadge.style.color = 'white';
+                                    indexBadge.style.fontSize = '0.7rem';
+                                    indexBadge.style.padding = '2px 5px';
+                                    indexBadge.style.borderRadius = '3px';
+                                    indexBadge.textContent = index + 1;
+                                    
+                                    thumbnail.appendChild(thumbImg);
+                                    thumbnail.appendChild(indexBadge);
+                                    
+                                    // 点击缩略图切换到该图片
+                                    thumbnail.addEventListener('click', () => {
+                                        resetZoom(); // 重置缩放
+                                        currentImageIndex = index;
+                                        updateStepDisplay(currentStep);
+                                    });
+                                    
+                                    thumbnailContainer.appendChild(thumbnail);
+                                });
+                                
+                                leftContent.appendChild(thumbnailContainer);
                             }
                         } else {
                             // 如果没有图片，显示提示信息
@@ -2981,14 +3098,12 @@
                             noImageMsg.style.alignItems = 'center';
                             noImageMsg.style.justifyContent = 'center';
                             noImageMsg.style.width = '100%';
-                            noImageMsg.style.height = '100%';
+                            noImageMsg.style.height = '300px';
                             noImageMsg.style.fontSize = '1rem';
                             noImageMsg.style.opacity = '0.6';
                             noImageMsg.textContent = '无图片';
-                            imgContainer.appendChild(noImageMsg);
+                            leftContent.appendChild(noImageMsg);
                         }
-                        
-                        leftContent.appendChild(imgContainer);
                         mainSlideArea.appendChild(content);
                         
                         // 更新缩略图导航
@@ -3086,17 +3201,23 @@
                     }
                     
                     function updateButtonStates() {
-                        const prevBtn = modal.querySelector('#prev-step');
-                        const nextBtn = modal.querySelector('#next-step');
+                        const prevBtnInPainPoint = modal.querySelector('#prev-step-pain-point');
+                        const nextBtnInPainPoint = modal.querySelector('#next-step-pain-point');
                         const currentStepData = steps[currentStep];
                         const hasPrev = currentStep > 0 || (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex > 0);
                         const hasNext = currentStep < steps.length - 1 || (currentStepData.imageUrls && currentStepData.imageUrls.length > 1 && currentImageIndex < currentStepData.imageUrls.length - 1);
                         
-                        prevBtn.disabled = !hasPrev;
-                        nextBtn.disabled = !hasNext;
-                        
-                        prevBtn.style.opacity = hasPrev ? '1' : '0.5';
-                        nextBtn.style.opacity = hasNext ? '1' : '0.5';
+                        // 更新挑战点容器中的按钮状态
+                        if (prevBtnInPainPoint) {
+                            prevBtnInPainPoint.disabled = !hasPrev;
+                            prevBtnInPainPoint.style.opacity = hasPrev ? '1' : '0.5';
+                            prevBtnInPainPoint.style.backgroundColor = hasPrev ? '#4a4a4a' : '#333';
+                        }
+                        if (nextBtnInPainPoint) {
+                            nextBtnInPainPoint.disabled = !hasNext;
+                            nextBtnInPainPoint.style.opacity = hasNext ? '1' : '0.5';
+                            nextBtnInPainPoint.style.backgroundColor = hasNext ? '#4a4a4a' : '#333';
+                        }
                     }
                     
                     // 绑定事件监听器
@@ -3215,7 +3336,7 @@
                             top: 70px;  /* 头部高度+padding */
                             left: 0;
                             right: 0;
-                            bottom: 80px;  /* 底部控制栏高度+padding */
+                            bottom: 10px;  /* 底部控制栏高度+padding */
                             display: flex;
                             overflow: hidden;
                             background-color: #1a1a1a;
@@ -3306,40 +3427,7 @@
                             </div>
                         </div>
                         
-                        <!-- 底部控制栏 - 固定在最底部 -->
-                        <div style="
-                            position: fixed;
-                            bottom: 0;
-                            left: 0;
-                            right: 0;
-                            background-color: rgba(0, 0, 0, 0.8);
-                            padding: 15px;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            gap: 20px;
-                            z-index: 10000;
-                            cursor: default; /* 恢复默认光标 */
-                        ">
-                            <button id="prev-step" style="
-                                padding: 10px 20px;
-                                background-color: #6c757d;
-                                color: white;
-                                border: none;
-                                border-radius: 5px;
-                                cursor: pointer;
-                                opacity: 0.5;
-                            ">上一步</button>
-                            
-                            <button id="next-step" style="
-                                padding: 10px 20px;
-                                background-color: #6c757d;
-                                color: white;
-                                border: none;
-                                border-radius: 5px;
-                                cursor: pointer;
-                            ">下一步</button>
-                        </div>
+
                     `;
                     
                     document.body.appendChild(modal);

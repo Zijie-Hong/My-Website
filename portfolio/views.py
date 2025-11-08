@@ -347,9 +347,6 @@ def edit_task(request, project_id, task_id):
     """编辑任务功能"""
     global global_data
     
-    # 确保图片目录存在
-    MEDIA_ROOT = os.path.join(settings.BASE_DIR, 'media', 'task_images')
-    os.makedirs(MEDIA_ROOT, exist_ok=True)
     
     # 查找项目
     project = next((p for p in global_data['projects'] if p['id'] == int(project_id)), None)
@@ -369,7 +366,7 @@ def edit_task(request, project_id, task_id):
             workshop = int(request.POST.get('workshop', 1))
             progress = int(request.POST.get('progress', 0))
             description = request.POST.get('description', '').strip()
-            pain_points = request.POST.get('pain_points', '').strip()  # 获取挑战点字段
+            pain_points = request.POST.get('pain_points', '').strip()
             process = request.POST.get('process', '').strip()
             
             # 处理文件上传
