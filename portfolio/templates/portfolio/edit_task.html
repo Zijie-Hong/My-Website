@@ -87,7 +87,7 @@
         padding: 0.75rem 1rem;
         border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
-        background: var(--bg-color);
+        background: white;
         color: var(--text-primary);
         font-size: 0.95rem;
         transition: var(--transition);
@@ -366,9 +366,10 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="process" class="form-label">实现过程（每行代表一个步骤）</label>
+                    <label for="process" class="form-label">实现过程（每行代表一个步骤标题）</label>
                     <div class="process-editor">
-                        <textarea id="process" name="process" class="form-textarea" rows="10">{% for step in task.process|split:'\n' %}{{ step }}{% if not forloop.last %}\n{% endif %}{% endfor %}</textarea>
+                        <textarea id="process" name="process" class="form-textarea" rows="10">{% if task.process %}{% for step in task.process %}{{ step.title }}{% if not forloop.last %}
+{% endif %}{% endfor %}{% endif %}</textarea>
                         
                         <!-- 图片上传功能已移除 -->
                     </div>
@@ -377,7 +378,7 @@
                 <div class="form-group">
                     <label for="pain_points" class="form-label">遇到的挑战（每行代表一个挑战点）</label>
                     <textarea id="pain_points" name="pain_points" class="form-textarea" rows="6" placeholder="请输入在完成任务过程中遇到的主要挑战和困难...">{% if task.pain_points %}{{ task.pain_points }}{% endif %}</textarea>
-                    <small class="form-help">请详细描述您在完成任务过程中遇到的困难、挑战和解决方案</small>
+                   
                 </div>
                 
                 <div class="form-actions">
