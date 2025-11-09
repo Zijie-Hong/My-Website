@@ -1000,28 +1000,70 @@
                         color: var(--text-color);
                     }
                     
+                    /* 新输入框样式 */
+                    .input {
+                        width: 100%;
+                        line-height: 28px;
+                        border: 2px solid transparent;
+                        border-bottom-color: #777;
+                        padding: .2rem 0;
+                        outline: none;
+                        background-color: transparent;
+                        color: #0d0c22;
+                        transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+                    }
+                    
+                    .input:focus, .input:hover {
+                        outline: none;
+                        padding: .2rem 1rem;
+                        border-radius: 1rem;
+                        border-color: #7a9cc6;
+                    }
+                    
+                    .input::placeholder {
+                        color: #777;
+                    }
+                    
+                    .input:focus::placeholder {
+                        opacity: 0;
+                        transition: opacity .3s;
+                    }
+                    
+                    /* 保留原有样式类以保证兼容性 */
                     .form-control {
                         width: 100%;
-                        padding: 0.875rem 1rem;
-                        border: 2px solid var(--input-border);
-                        border-radius: var(--border-radius-sm);
-                        font-size: 1rem;
-                        transition: var(--transition);
-                        background-color: var(--white);
-                    }
-                    
-                    .form-control:focus {
-                        border-color: var(--input-focus);
-                        box-shadow: 0 0 0 3px var(--input-focus-shadow);
+                        line-height: 28px;
+                        border: 2px solid transparent;
+                        border-bottom-color: #777;
+                        padding: .2rem 0;
                         outline: none;
+                        background-color: transparent;
+                        color: #0d0c22;
+                        transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
                     }
                     
-                    /* 文本域样式 */
-                    #processContent {
+                    .form-control:focus, .form-control:hover {
+                        outline: none;
+                        padding: .2rem 1rem;
+                        border-radius: 1rem;
+                        border-color: #7a9cc6;
+                    }
+                    
+                    .form-control::placeholder {
+                        color: #777;
+                    }
+                    
+                    .form-control:focus::placeholder {
+                        opacity: 0;
+                        transition: opacity .3s;
+                    }
+                    
+                    /* 文本域特定样式 */
+                    textarea.input,
+                    textarea.form-control {
                         resize: vertical;
                         min-height: 200px;
                         font-family: inherit;
-                        line-height: 1.6;
                     }
                     
                     /* 文件上传样式 */
@@ -1089,7 +1131,7 @@
                                     {% csrf_token %}
                                     <div class="form-group mb-6">
                                         <label for="processContent">实现过程内容（每行一个步骤）</label>
-                                        <textarea id="processContent" name="process_content" class="form-control" placeholder="请输入实现过程内容，每行表示一个步骤">{% for step in task.process %}{{ step.content }}{% if not forloop.last %}
+                                        <textarea id="processContent" name="process_content" class="input" placeholder="实现过程内容">{% for step in task.process %}{{ step.content }}{% if not forloop.last %}
 {% endif %}{% endfor %}</textarea>
                                     </div>
                                     <!-- 步骤图片上传区域 - 重构版 -->
@@ -1143,9 +1185,7 @@
                                                         <label for="step-description" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
                                                             图片描述
                                                         </label>
-                                                        <input type="text" id="step-description" name="step_description" placeholder="输入图片描述（可选）" 
-                                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); 
-                                                                       border-radius: var(--radius-md); font-size: 1rem; transition: var(--transition);">
+                                                        <input type="text" id="step-description" name="step_description" placeholder="图片描述" class="input">
                                                     </div>
                                                     
                                                     <div style="margin-bottom: 1.25rem;">

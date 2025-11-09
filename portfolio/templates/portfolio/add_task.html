@@ -97,35 +97,69 @@
         font-size: 0.95rem;
     }
     
-    /* 输入框样式 - 与全局样式保持一致 */
+    /* 新输入框样式 */
+    .input {
+        width: 100%;
+        line-height: 28px;
+        border: 2px solid transparent;
+        border-bottom-color: #777;
+        padding: .2rem 0;
+        outline: none;
+        background-color: transparent;
+        color: #0d0c22;
+        transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    
+    .input:focus, .input:hover {
+        outline: none;
+        padding: .2rem 1rem;
+        border-radius: 1rem;
+        border-color: #7a9cc6;
+    }
+    
+    .input::placeholder {
+        color: #777;
+    }
+    
+    .input:focus::placeholder {
+        opacity: 0;
+        transition: opacity .3s;
+    }
+    
+    /* 文本域特定样式 */
+    textarea.input {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+
+    /* 保留原有样式类以保证兼容性 */
     .form-control {
         width: 100%;
-        padding: 0.85rem 1.15rem;
-        border: 2px solid var(--border-color);
-        border-radius: var(--border-radius);
-        font-size: 1rem;
-        color: var(--text-color);
-        background-color: white;
-        transition: var(--transition);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    }
-    
-    .form-control:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    }
-    
-    .form-control:focus {
+        line-height: 28px;
+        border: 2px solid transparent;
+        border-bottom-color: #777;
+        padding: .2rem 0;
         outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(132, 58, 114, 0.15);
-        transform: translateY(-1px);
+        background-color: transparent;
+        color: #0d0c22;
+        transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    
+    .form-control:focus, .form-control:hover {
+        outline: none;
+        padding: .2rem 1rem;
+        border-radius: 1rem;
+        border-color: #7a9cc6;
     }
     
     .form-control::placeholder {
-        color: var(--text-light);
-        font-weight: 400;
-        letter-spacing: 0.2px;
+        color: #777;
+    }
+    
+    .form-control:focus::placeholder {
+        opacity: 0;
+        transition: opacity .3s;
     }
     
     /* 下拉框样式 */
@@ -324,12 +358,12 @@
 
                     <div class="form-group">
                         <label for="title" class="form-label">任务标题 *</label>
-                        <input type="text" id="title" name="title" required placeholder="请输入任务标题" value="{{ form.title.value|default:'' }}" class="form-control">
+                        <input type="text" id="title" name="title" required placeholder="任务标题" value="{{ form.title.value|default:'' }}" class="input">
                     </div>
 
                     <div class="form-group">
                         <label for="description" class="form-label">任务描述 *</label>
-                        <textarea id="description" name="description" required rows="5" placeholder="请输入任务描述" class="form-control">{{ form.description.value|default:'' }}</textarea>
+                        <textarea id="description" name="description" required rows="3" placeholder="任务描述" class="input">{{ form.description.value|default:'' }}</textarea>
                     </div>
 
                     <div class="form-row">
@@ -372,7 +406,7 @@
 
                     <div class="form-group">
                         <label for="process" class="form-label">实现过程</label>
-                        <textarea id="process" name="process" rows="5" placeholder="请输入实现过程，每行一个步骤" class="form-control">{{ form.process.value|default:'' }}</textarea>
+                        <textarea id="process" name="process" rows="5" placeholder="实现过程步骤" class="input">{{ form.process.value|default:'' }}</textarea>
                         <small class="form-text">每行输入一个步骤，系统将自动按顺序显示</small>
                     </div>
                     
