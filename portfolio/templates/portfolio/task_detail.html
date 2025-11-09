@@ -1519,24 +1519,34 @@
             function populateStepSelect() {
                 
                 const stepSelect = document.getElementById('step-select');
+                
+                // 获取页面上实际的步骤数量，这是最可靠的来源
+                const processSteps = document.querySelectorAll('.process-step');
+                const actualStepCount = processSteps.length;
+                
+                // 如果从页面获取的步骤数量为0，则尝试从processContent获取
                 const processText = processContent.value.trim();
                 const processLines = processText.split('\n').filter(line => line.trim());
+                const contentStepCount = processLines.length;
+                
+                // 优先使用实际步骤数量，确保步骤数量准确
+                const finalStepCount = actualStepCount > 0 ? actualStepCount : contentStepCount;
                 
                 // 清空现有选项
                 stepSelect.innerHTML = '';
                 
                 // 添加步骤选项 - 严格控制格式
-                processLines.forEach((line, index) => {
-                    const stepNumber = index + 1;
+                for (let i = 0; i < finalStepCount; i++) {
+                    const stepNumber = i + 1;
                     const option = document.createElement('option');
                     option.value = stepNumber;
                     // 强制设置为"步骤 X"格式，不包含任何其他信息
                     option.textContent = '步骤 ' + stepNumber;
                     stepSelect.appendChild(option);
-                });
+                }
                 
                 // 如果没有步骤，至少添加一个
-                if (processLines.length === 0) {
+                if (finalStepCount === 0) {
                     const option = document.createElement('option');
                     option.value = '1';
                     option.textContent = '步骤 1';
@@ -2228,19 +2238,15 @@
                         if (stepTextElement) {
                             textToAdd = stepTextElement.textContent.trim();
                         } else {
-                           
-                            
+                            // 对于textarea显示，我们只使用description内容，不使用title
                             const stepDescription = step.querySelector('.step-description');
-                            
-                            textToAdd = stepDescription.textContent.trim();
-                            
+                            if (stepDescription) {
+                                textToAdd = stepDescription.textContent.trim();
+                            }
                         }
                         
-                        // 移除步骤编号前缀（如果存在）
-                        const cleanedText = textToAdd.replace(/^\d+\.\s*/, '');
-                        if (cleanedText) {
-                            currentProcess += `${cleanedText}\n`;
-                        }
+                        // 保留原始文本，不再移除步骤编号前缀
+                        currentProcess += `${textToAdd}\n`;
                     });
                     
                     processContent.value = currentProcess.trim();
@@ -2380,16 +2386,40 @@
                     
                     // ===== 修复1: 正确处理待上传的图片 =====
                     console.log('待上传图片队列:', window.pendingUploads);
+                    console.log('待上传队列长度:', window.pendingUploads?.length);
                     
                     if (Array.isArray(window.pendingUploads) && window.pendingUploads.length > 0) {
                         // 按步骤分组，为每个步骤内的图片分配唯一索引
                         const stepFilesMap = {};
                         
-                        window.pendingUploads.forEach((pending, index) => {
+                        // 过滤掉已被标记删除的待上传图片
+                        const filteredUploads = window.pendingUploads.filter(pending => {
+                            // 确保pending对象有效且有id属性
+                            if (!pending || !pending.id || !pending.id.toString().startsWith('pending_')) {
+                                console.warn('跳过无效的待上传图片对象:', pending);
+                                return false;
+                            }
+                            
+                            // 检查是否存在本地pendingUploads数组来验证图片是否已被删除
+                            if (window.taskEditPendingUploads) {
+                                const isStillPending = window.taskEditPendingUploads.some(p => p.id === pending.id);
+                                if (!isStillPending) {
+                                    console.log(`过滤掉已删除的图片: ${pending.id}, 文件名: ${pending.file?.name}`);
+                                    return false;
+                                }
+                            }
+                            
+                            return true;
+                        });
+                        
+                        console.log('过滤后的待上传图片数量:', filteredUploads.length);
+                        
+                        filteredUploads.forEach((pending, index) => {
                             console.log(`添加待上传图片 ${index + 1}:`, {
                                 step: pending.step,
                                 fileName: pending.file.name,
-                                fileSize: pending.file.size
+                                fileSize: pending.file.size,
+                                imageId: pending.id
                             });
                             
                             // 为每个步骤的文件创建计数器

@@ -150,13 +150,11 @@ filterSelects.forEach(select => {
     select.addEventListener('change', function() {
         // 构建筛选URL
         const category = document.getElementById('category-filter')?.value || '';
-        const technology = document.getElementById('technology-filter')?.value || '';
         
         let url = '/projects/?';
         const params = [];
         
         if (category) params.push(`category=${encodeURIComponent(category)}`);
-        if (technology) params.push(`technology=${encodeURIComponent(technology)}`);
         
         if (params.length > 0) {
             url += params.join('&');

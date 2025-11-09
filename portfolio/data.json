@@ -9,17 +9,16 @@
           "id": 101,
           "title": "交易算法优化",
           "category": "R&D",
-          "technology": "Python, C++",
           "workshop": 1,
           "description": "优化高频交易算法，提升执行效率和稳定性。",
           "process": [
             {
               "title": "步骤 1",
-              "content": "分析现有算法性能瓶颈"
+              "content": "3.分析现有算法性能瓶颈\r"
             },
             {
               "title": "步骤 2",
-              "content": "优化算法核心逻辑"
+              "content": "优化算法核心逻辑\r"
             },
             {
               "title": "步骤 3",
@@ -84,13 +83,12 @@
           "id": 102,
           "title": "风险控制模块测试",
           "category": "UAT",
-          "technology": "JMeter, Postman",
           "workshop": 1,
           "description": "验证风险控制策略在各种市场条件下的有效性。",
           "process": [
             {
               "title": "步骤 1",
-              "content": "6"
+              "content": "2.3 xxx."
             },
             {
               "title": "步骤 2",
@@ -100,23 +98,14 @@
           "results": "成功识别并修复3个潜在风险点，系统稳定性提升。",
           "progress": 80,
           "pain_points": "1. 风险控制策略在某些市场条件下失效。\r\n2. 系统响应时间延长。",
-          "step_images": [
-            {
-              "step": 2,
-              "url": "/media/task_step_images/task_102_step_2_0_640_(2).webp",
-              "file_name": "task_102_step_2_0_640_(2).webp",
-              "filename": "task_102_step_2_0_640_(2).webp",
-              "description": "无描述",
-              "id": 10
-            }
-          ],
+          "step_images": [],
           "db_images": [
             {
-              "id": 10,
+              "id": 38,
               "task_id": 102,
-              "image_url": "/media/task_step_images/task_102_step_2_0_640_(2).webp",
-              "description": "无描述",
-              "uploaded_at": "2025-11-08 14:24:21"
+              "image_url": "/media/task_step_images/task_102_step_1_0_71a3510f3e50fd7291d1318bef757bff.jpg",
+              "description": "",
+              "uploaded_at": "2025-11-09 13:20:30"
             }
           ],
           "workshop_text": "第一次workshop"
@@ -125,7 +114,6 @@
           "id": 310,
           "title": "gfdf",
           "category": "UAT",
-          "technology": "",
           "workshop": 1,
           "description": "dsf",
           "process": [
@@ -160,7 +148,6 @@
           "id": 201,
           "title": "机器学习模型训练",
           "category": "R&D",
-          "technology": "TensorFlow, PyTorch",
           "workshop": 2,
           "description": "开发预测分析模型，实现业务趋势的智能预测。",
           "process": [
@@ -179,10 +166,61 @@
           "workshop_text": "第二次workshop",
           "step_images": [],
           "db_images": []
+        },
+        {
+          "id": 316,
+          "title": "qq",
+          "category": "R&D",
+          "workshop": 1,
+          "description": "qqq",
+          "process": [
+            {
+              "title": "aaa简化了代码，",
+              "content": ""
+            },
+            {
+              "title": "简化了代码，",
+              "content": ""
+            },
+            {
+              "title": "x",
+              "content": ""
+            }
+          ],
+          "results": "",
+          "progress": 0,
+          "pain_points": "",
+          "workshop_text": "第一次workshop",
+          "step_images": [
+            {
+              "step": 3,
+              "url": "/media/task_step_images/task_316_step_3_0_9bd35e5edbe84d9abae1d5f435f85d8e.jpeg",
+              "file_name": "task_316_step_3_0_9bd35e5edbe84d9abae1d5f435f85d8e.jpeg",
+              "filename": "task_316_step_3_0_9bd35e5edbe84d9abae1d5f435f85d8e.jpeg",
+              "description": "",
+              "id": 37
+            }
+          ],
+          "db_images": [
+            {
+              "id": 37,
+              "task_id": 316,
+              "image_url": "/media/task_step_images/task_316_step_3_0_9bd35e5edbe84d9abae1d5f435f85d8e.jpeg",
+              "description": "",
+              "uploaded_at": "2025-11-09 12:38:40"
+            },
+            {
+              "id": 34,
+              "task_id": 316,
+              "image_url": "/media/task_step_images/task_316_step_2_0_9bd35e5edbe84d9abae1d5f435f85d8e.jpeg",
+              "description": "",
+              "uploaded_at": "2025-11-09 12:25:59"
+            }
+          ]
         }
       ]
     }
   ],
-  "next_task_id": 311,
+  "next_task_id": 317,
   "next_project_id": 4
 }

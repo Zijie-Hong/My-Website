@@ -16,6 +16,14 @@ function setupProcessEditFunctionality() {
     let imagesToDelete = new Set();
     let pendingUploads = [];
     
+    // 暴露pendingUploads到window.taskEditPendingUploads，供task_detail.html中的saveProcessChanges函数使用
+    window.taskEditPendingUploads = pendingUploads;
+    
+    // 生成唯一ID的辅助函数
+    function generateUniqueId(prefix = 'id') {
+        return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
     // ===== 关键修复1: 改进步骤选择下拉框 =====
     function populateStepSelect() {
         const processText = processContent.value.trim();
@@ -77,13 +85,17 @@ function setupProcessEditFunctionality() {
         
         // 2. 添加待上传图片
         pendingUploads.forEach(pending => {
+            // 确保使用原始ID，不要在显示时重新生成ID
+            // 这样可以确保删除时能够正确匹配
+            console.log('处理待上传图片:', { pendingId: pending.id, step: pending.step, name: pending.file?.name });
+            
             uploadedImages.push({
                 step: pending.step,
                 url: pending.previewUrl,
                 description: pending.description,
                 isPending: true,
                 file: pending.file,
-                id: 'pending_' + Date.now() + Math.random()
+                id: pending.id // 直接使用原始ID
             });
         });
         
@@ -241,12 +253,39 @@ function setupProcessEditFunctionality() {
         
         // 如果是待上传的图片,从pendingUploads中移除
         if (imageId.toString().startsWith('pending_')) {
-            const index = pendingUploads.findIndex(p => 
-                p.step == step && (p.id === imageId || !p.id)
-            );
+            // 首先尝试精确匹配ID
+            let index = pendingUploads.findIndex(p => p.id === imageId);
+            
+            // 如果精确匹配失败，再尝试基于步骤和ID前缀匹配
+            if (index === -1) {
+                index = pendingUploads.findIndex(p => 
+                    p.step == step && 
+                    (p.id && p.id.startsWith('pending_'))
+                );
+            }
+            
+            // 如果找到匹配项，删除它
             if (index !== -1) {
-                pendingUploads.splice(index, 1);
-                console.log('从待上传列表中移除图片');
+                const removedImage = pendingUploads.splice(index, 1)[0];
+                console.log('从待上传列表中移除图片:', removedImage.file?.name);
+                console.log('更新后的待上传列表长度:', pendingUploads.length);
+                
+                // 同步更新window.pendingUploads全局变量，确保task_detail.html中的保存函数也能正确读取
+                if (window.pendingUploads && Array.isArray(window.pendingUploads)) {
+                    const windowIndex = window.pendingUploads.findIndex(p => p.id === imageId);
+                    if (windowIndex !== -1) {
+                        window.pendingUploads.splice(windowIndex, 1);
+                        console.log('已同步更新window.pendingUploads全局变量');
+                    }
+                }
+            } else {
+                console.error('未找到要删除的待上传图片:', { step, imageId });
+                console.log('当前待上传列表:', pendingUploads.map(p => ({ id: p.id, step: p.step, name: p.file?.name })));
+                
+                // 检查window.pendingUploads
+                if (window.pendingUploads) {
+                    console.log('window.pendingUploads内容:', window.pendingUploads.map(p => ({ id: p.id, step: p.step, name: p.file?.name })));
+                }
             }
         } else {
             // 如果是已存在的图片,添加到删除列表
@@ -254,6 +293,11 @@ function setupProcessEditFunctionality() {
             imagesToDelete.add(imageKey);
             console.log('添加到删除列表:', imageKey);
             console.log('当前删除列表:', Array.from(imagesToDelete));
+            
+            // 同步更新window.imagesToDelete全局变量
+            if (window.imagesToDelete) {
+                window.imagesToDelete.add(imageKey);
+            }
         }
         
         // 重新显示图片列表
@@ -375,15 +419,30 @@ function setupProcessEditFunctionality() {
             reader.index = i;
             
             reader.onload = function(e) {
-                // 添加到待上传列表
-                const pendingId = 'pending_' + Date.now() + Math.random() + '_' + this.index;
-                pendingUploads.push({
+                // 添加到待上传列表 - 使用一致的ID生成方式
+                const pendingId = generateUniqueId('pending');
+                const newImage = {
                     id: pendingId,
                     step: stepNumber,
                     file: this.file,
                     previewUrl: e.target.result,
                     description: description
-                });
+                };
+                
+                // 添加到本地pendingUploads数组
+                pendingUploads.push(newImage);
+                console.log('添加图片到待上传列表，ID:', pendingId);
+                
+                // 同步更新window.pendingUploads全局变量
+                if (!window.pendingUploads) {
+                    window.pendingUploads = [];
+                    console.log('初始化window.pendingUploads全局变量');
+                }
+                window.pendingUploads.push(newImage);
+                console.log('已同步更新window.pendingUploads全局变量');
+                
+                // 确保window.taskEditPendingUploads指向最新的pendingUploads数组
+                window.taskEditPendingUploads = pendingUploads;
                 
                 addedCount++;
                 processedCount++;
