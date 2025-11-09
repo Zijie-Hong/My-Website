@@ -237,6 +237,18 @@ def add_task(request, project_id):
         
         # 处理表单提交
         try:
+            # 先获取原始process字符串
+            process_str = request.POST.get('process', '').strip()
+            
+            # 将process字符串转换为对象数组，只包含title字段
+            process_steps = []
+            if process_str:
+                # 按行分割并过滤空行
+                lines = [line.strip() for line in process_str.split('\n') if line.strip()]
+                # 为每行创建一个步骤对象，只包含title字段
+                for title in lines:
+                    process_steps.append({'title': title})
+            
             new_task = {
                 'id': global_data['next_task_id'],
                 'title': request.POST.get('title', '').strip(),
@@ -244,7 +256,7 @@ def add_task(request, project_id):
                 'technology': request.POST.get('technology', '').strip(),
                 'workshop': int(request.POST.get('workshop')),
                 'description': request.POST.get('description', '').strip(),
-                'process': request.POST.get('process', '').strip(),
+                'process': process_steps,  # 使用处理后的步骤对象数组
                 'results': request.POST.get('results', '').strip(),
                 'progress': int(request.POST.get('progress', 0)),
                 'pain_points': request.POST.get('pain_points', '').strip()
